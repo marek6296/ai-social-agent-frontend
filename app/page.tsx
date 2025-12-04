@@ -4,18 +4,28 @@ export default function Home() {
       <header className="border-b border-slate-800">
         <div className="max-w-5xl mx-auto flex items-center justify-between py-4 px-4">
           <div className="font-bold text-xl">AI Social Agent</div>
-          <nav className="flex gap-4">
+          <nav className="flex gap-3 items-center">
             <a href="#features" className="text-sm text-slate-300 hover:text-white">
               Funkcie
             </a>
             <a href="#pricing" className="text-sm text-slate-300 hover:text-white">
               Cenník
             </a>
+
+            {/* Login link */}
             <a
               href="/login"
-              className="text-sm bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-4 py-2 rounded-md"
+              className="text-sm text-slate-300 hover:text-white px-3 py-2 rounded-md"
             >
               Prihlásiť sa
+            </a>
+
+            {/* Signup tlačidlo */}
+            <a
+              href="/signup"
+              className="text-sm bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-4 py-2 rounded-md"
+            >
+              Vytvoriť účet
             </a>
           </nav>
         </div>
