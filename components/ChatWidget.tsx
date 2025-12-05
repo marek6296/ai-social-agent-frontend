@@ -8,7 +8,7 @@ type Message = {
   content: string;
 };
 
-export function ChatWidget() {
+export function ChatWidget({ ownerUserId }: { ownerUserId?: string }) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -59,7 +59,10 @@ export function ChatWidget() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({
+          message: text,
+          ownerUserId,
+        }),
       });
 
       if (!res.ok) {
@@ -212,8 +215,8 @@ export function ChatWidget() {
           </button>
         </div>
         <p className="mt-1 text-[10px] text-slate-500">
-          Tento chat používa demo odpovede z API. Neskôr ho prepojíme na reálne AI
-          a tvoje firemné dáta.
+          Tento chat používa AI asistenta prispôsobeného pre túto stránku a tvoje
+          nastavenia bota.
         </p>
       </form>
     </div>

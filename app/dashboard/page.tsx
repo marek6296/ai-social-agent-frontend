@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
+import { ChatWidget } from "@/components/ChatWidget";
 
 type UserProfile = {
+  id: string;
   email: string | null;
   firstName?: string;
   lastName?: string;
@@ -25,9 +27,10 @@ export default function DashboardPage() {
         return;
       }
 
-      const { email, user_metadata } = data.user;
+      const { id, email, user_metadata } = data.user;
 
       setUser({
+        id,
         email: email ?? null,
         firstName: user_metadata?.firstName,
         lastName: user_metadata?.lastName,
@@ -46,7 +49,11 @@ export default function DashboardPage() {
 
   const fullName = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim();
 
-  const embedCode = `<script src="https://tvoja-domena.sk/embed.js" data-bot-id="TVOJ_BOT_ID"></script>`;
+  // Embed kód pre tohto používateľa – data-bot-id = jeho user.id
+  // Na produkcii smeruje na tvoju Vercel doménu.
+  const embedCode = `<script src="https://ai-social-agent-frontend.vercel.app/embed.js" data-bot-id="${
+    user?.id ?? "TVOJ_BOT_ID"
+  }"></script>`;
 
   if (loading) {
     return (
@@ -90,8 +97,8 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        {/* Hlavné karty – nastavenia, FAQ, konverzácie */}
-        <section className="grid gap-4 md:grid-cols-3">
+        {/* Hlavné karty – nastavenia, FAQ, konverzácie, analytics */}
+        <section className="grid gap-4 md:grid-cols-4">
           {/* Nastavenia chatbota */}
           <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5 shadow-lg shadow-black/40 flex flex-col justify-between gap-3">
             <div>
@@ -148,6 +155,44 @@ export default function DashboardPage() {
               Zobraziť konverzácie →
             </Link>
           </div>
+
+          {/* Analytics bota */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5 shadow-lg shadow-black/40 flex flex-col justify-between gap-3">
+            <div>
+              <h2 className="text-sm md:text-base font-semibold mb-1">
+                Analytics bota
+              </h2>
+              <p className="text-xs text-slate-400">
+                Zisti, koľko konverzácií vzniká, v ktoré dni je bot najaktívnejší
+                a ako sa používanie mení v čase.
+              </p>
+            </div>
+            <Link
+              href="/dashboard/analytics"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-emerald-300"
+            >
+              Otvoriť štatistiky →
+            </Link>
+          </div>
+        </section>
+
+        {/* Test tvojho AI bota */}
+        <section className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5 shadow-lg shadow-black/40 flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div>
+              <h2 className="text-sm md:text-base font-semibold">
+                Vyskúšaj svojho AI chatbota
+              </h2>
+              <p className="text-xs text-slate-400">
+                Toto je náhľad tvojho bota so všetkými nastaveniami a FAQ, ktoré
+                máš uložené v tomto účte.
+              </p>
+            </div>
+          </div>
+
+          <div className="max-w-md">
+            <ChatWidget ownerUserId={user?.id} />
+          </div>
         </section>
 
         {/* Embed kód */}
@@ -181,8 +226,9 @@ export default function DashboardPage() {
           </div>
 
           <p className="text-[11px] text-slate-500">
-            Neskôr sem doplníme skutočný script, ktorý načíta tvojho AI
-            chatbota podľa ID klienta a jeho nastavení v databáze.
+            Tento kód vlož na web svojho klienta tesne pred ukončovaciu značku{" "}
+            <code>&lt;/body&gt;</code>. Widget načíta AI chatbota podľa{" "}
+            <code>data-bot-id</code> (ID tvojho účtu).
           </p>
         </section>
       </div>
