@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import Link from "next/link";
 
 type UserProfile = {
   email: string | null;
@@ -106,6 +107,21 @@ export default function DashboardPage() {
             </button>
           </div>
         </header>
+
+        {/* Link na skutočné nastavenia chatbota */}
+        <section className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5 shadow-lg shadow-black/40">
+          <h2 className="text-sm md:text-base font-semibold mb-1">Spravovať nastavenia chatbota</h2>
+          <p className="text-xs text-slate-400 mb-3">
+            Otvor stránku, kde môžeš uložiť firemné údaje, meno bota a jeho štýl komunikácie.
+          </p>
+
+          <Link
+            href="/dashboard/bot-settings"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-emerald-300"
+          >
+            Otvoriť nastavenia →
+          </Link>
+        </section>
 
         {/* Horné 2 stĺpce: nastavenia + ukážka widgetu */}
         <section className="grid gap-6 md:grid-cols-3">
