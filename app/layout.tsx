@@ -1,37 +1,21 @@
+// app/layout.tsx
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ChatWidget } from "@/components/ChatWidget";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
-  title: "AI Social Agent – Firemný AI chatbot na váš web",
+  title: "AI Social Agent – Firemný AI chatbot na tvoj web",
   description:
-    "AI Social Agent je AI chatbot pre firmy, ktorý odpovedá zákazníkom, poskytuje podporu, zbiera leady a funguje 24/7 priamo na vašej webstránke pomocou jednoduchého embed kódu.",
+    "AI Social Agent ti pomôže premeniť webstránku na nonstop AI asistenta – odpovede na otázky, leady a podpora 24/7.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="sk">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-white`}
-      >
-        {children}
-        <ChatWidget />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
