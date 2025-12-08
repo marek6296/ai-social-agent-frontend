@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 type Message = {
   id: number;
@@ -9,6 +11,13 @@ type Message = {
 };
 
 export function ChatWidget({ ownerUserId }: { ownerUserId?: string }) {
+  const pathname = usePathname();
+
+  // resolvedOwnerId = to, čo naozaj posielame do API
+  const [resolvedOwnerId, setResolvedOwnerId] = useState<string | null>(
+    ownerUserId ?? null
+  );
+
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -23,6 +32,40 @@ export function ChatWidget({ ownerUserId }: { ownerUserId?: string }) {
   const [error, setError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Keď sa zmení stránka (pathname) alebo ownerUserId (napr. prejdeš na Test môjho bota),
+  // resetneme konverzáciu a naviažeme správneho bota.
+  useEffect(() => {
+    // ak príde nový ownerUserId (napr. na Test môjho bota), prepíšeme resolvedOwnerId
+    setResolvedOwnerId(ownerUserId ?? resolvedOwnerId);
+
+    setMessages([
+      {
+        id: Date.now(),
+        role: "assistant",
+        content: pathname.startsWith("/dashboard/my-bot")
+          ? "Ahoj! Som tvoj firemný AI chatbot. Tu si ma môžeš otestovať presne tak, ako budem odpovedať tvojim zákazníkom. 🙂"
+          : "Ahoj! Som AI chatbot tejto stránky. Môžem ti vysvetliť, čo tento nástroj robí a ako ti môže pomôcť. Opýtaj sa ma čokoľvek. 🙂",
+      },
+    ]);
+    setError(null);
+  }, [ownerUserId, pathname]);
+
+  // 🔍 Ak sme na /dashboard/my-bot a nemáme ownerUserId v props,
+  // načítaj ho zo Supabase (prihlásený user)
+  useEffect(() => {
+    const fetchUserIdIfNeeded = async () => {
+      if (resolvedOwnerId) return; // už máme
+      if (!pathname.startsWith("/dashboard/my-bot")) return; // len na test-bota page
+
+      const { data, error } = await supabase.auth.getUser();
+      if (!error && data.user) {
+        setResolvedOwnerId(data.user.id);
+      }
+    };
+
+    fetchUserIdIfNeeded();
+  }, [pathname, resolvedOwnerId]);
 
   // auto scroll na koniec pri novej správe
   useEffect(() => {
@@ -61,7 +104,7 @@ export function ChatWidget({ ownerUserId }: { ownerUserId?: string }) {
         },
         body: JSON.stringify({
           message: text,
-          ownerUserId,
+          ownerUserId: resolvedOwnerId ?? null,
         }),
       });
 
@@ -214,10 +257,12 @@ export function ChatWidget({ ownerUserId }: { ownerUserId?: string }) {
             Poslať
           </button>
         </div>
-        <p className="mt-1 text-[10px] text-slate-500">
-          Tento chat používa AI asistenta prispôsobeného pre túto stránku a tvoje
-          nastavenia bota.
-        </p>
+        {pathname.startsWith("/dashboard/my-bot") && (
+          <p className="mt-1 text-[10px] text-slate-500">
+            Tento chat používa AI asistenta prispôsobeného pre túto stránku a tvoje
+            nastavenia bota.
+          </p>
+        )}
       </form>
     </div>
   );
