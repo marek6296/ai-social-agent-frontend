@@ -256,6 +256,35 @@ export default function DashboardPage() {
                 className="absolute inset-0"
               />
             </motion.div>
+
+            {/* Leady z chatu */}
+            <motion.div
+              className="relative rounded-2xl border border-slate-800/80 bg-slate-950/80 p-5 shadow-lg shadow-black/40 flex flex-col justify-between gap-3 transition-shadow duration-200 hover:shadow-xl hover:shadow-black/60 hover:border-emerald-500/50 cursor-pointer"
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={cardSpring(0.2)}
+              whileHover={{ y: -4, scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+            >
+              <div>
+                <h2 className="text-sm md:text-base font-semibold mb-1">
+                  Leady z chatu
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Zobraz si kontakty, ktoré návštevníci zanechali vo formulári v chate
+                  tvojho AI chatbota.
+                </p>
+              </div>
+              <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-400">
+                <span>Otvoriť leady</span>
+                <span>→</span>
+              </div>
+              <Link
+                href="/dashboard/leads"
+                aria-label="Otvoriť leady z chatu"
+                className="absolute inset-0"
+              />
+            </motion.div>
           </motion.section>
 
           {/* Druhý rad – Test bota + Asistent */}

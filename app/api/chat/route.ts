@@ -3,12 +3,14 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabaseServer = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-const PLATFORM_OWNER_ID = "faeb1920-35fe-47be-a169-1393591cc3e4"; // default bot owner (tvoj účet)
+// tvoj hlavný účet – globálny bot pre AI Social Agent
+const PLATFORM_OWNER_ID = "faeb1920-35fe-47be-a169-1393591cc3e4";
 
-// CORS pre embed z iných domén
+// CORS pre embed / iné domény
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST,OPTIONS",
@@ -104,7 +106,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const text = (body?.message as string | undefined)?.trim();
+    const text = (body?.message as string | undefined)?.trim() || "";
     const ownerUserIdFromBody =
       (body?.ownerUserId as string | undefined) || null;
 
@@ -123,53 +125,62 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1) Základné default nastavenia bota
+    // 🔧 Normalizácia ownerUserId:
+    // - null  => globálny bot (AI Social Agent)
+    // - konkrétne UUID != PLATFORM_OWNER_ID => klientsky bot
+    const normalizedOwnerUserId =
+      ownerUserIdFromBody && ownerUserIdFromBody !== PLATFORM_OWNER_ID
+        ? ownerUserIdFromBody
+        : null;
+
+    // Toto je naozaj owner_user_id klienta (alebo null, ak ide o globálneho bota)
+    let ownerUserId: string | null = normalizedOwnerUserId;
+
+    // Z ktorého používateľa čítame bot_settings/FAQ:
+    // - ak ide o klientsky bot => jeho user_id
+    // - inak => tvoj PLATFORM_OWNER_ID (globálny bot)
+    const settingsUserId: string | null = ownerUserId ?? PLATFORM_OWNER_ID;
+
+    // základné default nastavenia
     let companyName: string;
     let botName: string;
     let description: string;
     let tone: "friendly" | "formal" | "casual" = "friendly";
-
-    // ownerUserId = klientsky bot (Test môjho bota, embed)
-    // null = globálny bot (AI Social Agent, helper v dashboarde)
-    let ownerUserId: string | null = ownerUserIdFromBody;
-
-    // ID používateľa, z ktorého čítame bot_settings/FAQ.
-    // Ak klient neposlal ownerUserId (globálny bot), použijeme tvoj účet.
-    const settingsUserId: string | null = ownerUserId || PLATFORM_OWNER_ID || null;
+    let showLeadFormEnabled = false; // 👈 flag pre lead-form
+    let widgetPosition: "left" | "right" = "right"; // 👈 default pozícia widgetu
 
     if (!ownerUserId) {
       // Globálny bot – tvoj AI Social Agent
       companyName = "AI Social Agent";
       botName = "AI asistent";
       description =
-        "Pomáha návštevníkom pochopiť, čo služba AI Social Agent robí a ako môže pomôcť firmám s AI chatbotmi a automatizáciou.";
+        "Pomáham návštevníkom pochopiť, čo služba AI Social Agent robí a ako môže pomôcť firmám s AI chatbotmi a automatizáciou.";
     } else {
-      // Klientsky bot – neutrálna firma, ktorú neskôr prebijú nastavenia z DB
+      // Klientsky bot – default, kým neprídu dáta z DB
       companyName = "Vaša firma";
       botName = "AI chatbot";
       description =
-        "Pomáha návštevníkom zodpovedať otázky o vašich službách, produktoch a podpore.";
+        "Pomáham návštevníkom zodpovedať otázky o vašich službách, produktoch a podpore.";
     }
 
     // texty, ktoré doplníme podľa DB
     let settingsText = "";
     let faqText = "";
-    let settingsFound = false;
 
     // 2) Načítaj bot_settings a FAQ pre settingsUserId
-    // - ak máme ownerUserId (klientsky bot) → použijeme jeho user_id
-    // - ak je ownerUserId null (globálny bot) → použijeme PLATFORM_OWNER_ID (tvoj účet)
     if (settingsUserId) {
       try {
-        // a) BOT SETTINGS – tabuľka bot_settings s fieldmi company_name, bot_name, description, tone, user_id
-        const { data: settingsData, error: settingsError } = await supabaseServer
-          .from("bot_settings")
-          .select("company_name, bot_name, description, tone")
-          .eq("user_id", settingsUserId)
-          .maybeSingle();
+        // a) BOT SETTINGS
+        const { data: settingsData, error: settingsError } =
+          await supabaseServer
+            .from("bot_settings")
+            .select(
+              "company_name, bot_name, description, tone, show_lead_form_enabled, widget_position"
+            )
+            .eq("user_id", settingsUserId)
+            .maybeSingle();
 
         if (!settingsError && settingsData) {
-          settingsFound = true;
           if (settingsData.company_name) {
             companyName = settingsData.company_name;
           }
@@ -186,6 +197,15 @@ export async function POST(req: Request) {
           ) {
             tone = settingsData.tone;
           }
+          if (settingsData.show_lead_form_enabled === true) {
+            showLeadFormEnabled = true;
+          }
+          if (
+            settingsData.widget_position === "left" ||
+            settingsData.widget_position === "right"
+          ) {
+            widgetPosition = settingsData.widget_position;
+          }
 
           const lines: string[] = [];
           lines.push(`Názov firmy: ${companyName}`);
@@ -200,7 +220,7 @@ export async function POST(req: Request) {
           );
         }
 
-        // b) FAQ – tabuľka faq_items s question, answer, user_id
+        // b) FAQ
         const { data: faqData, error: faqError } = await supabaseServer
           .from("faq_items")
           .select("question, answer")
@@ -223,7 +243,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // 3) Poskladanie system promptu
+    // 3) System prompt
     const toneText =
       tone === "formal"
         ? "Odpovedáš profesionálne, vecne a formálne, ale stále príjemným tónom."
@@ -247,6 +267,7 @@ ${faqText || "(Zatiaľ nemáš žiadne firemné FAQ, odpovedaj všeobecne, ale u
 Pravidlá:
 - Odpovedaj vždy v slovenčine.
 - Buď stručný, ale konkrétny.
+- Nepíš v každej odpovedi „Som ... AI chatbot pre firmu ...“. Predstav sa len keď to dáva zmysel (napr. na začiatku konverzácie).
 - Ak niečo nevieš, priznaj to a navrhni ďalší krok (kontakt, email, telefón, formulár).
       `.trim();
 
@@ -279,13 +300,11 @@ Pravidlá:
       );
     }
 
-    // surová odpoveď z OpenAI
     const rawReply: string =
       data?.choices?.[0]?.message?.content ||
       "Ospravedlňujem sa, momentálne neviem vytvoriť odpoveď.";
 
-    // vždy pridáme jasný úvod podľa botName + companyName
-    const replyWithIntro = `Som ${botName}, AI chatbot pre firmu ${companyName}.\n\n${rawReply}`;
+    const finalReply = rawReply;
 
     // 5) Uloženie do chat_logs
     const category = categorizeQuestion(text);
@@ -295,13 +314,13 @@ Pravidlá:
         await supabaseServer.from("chat_logs").insert({
           owner_user_id: ownerUserId,
           question: text,
-          answer: replyWithIntro,
+          answer: finalReply,
           category,
         });
       } else {
         await supabaseServer.from("chat_logs").insert({
           question: text,
-          answer: replyWithIntro,
+          answer: finalReply,
           category,
         });
       }
@@ -309,9 +328,12 @@ Pravidlá:
       console.warn("Nepodarilo sa uložiť chat log:", logError);
     }
 
-    const debugSuffix = `\n\n[DEBUG ownerUserId=${ownerUserId ?? "null"} settingsFound=${settingsFound}]`;
     return NextResponse.json(
-      { reply: replyWithIntro + debugSuffix },
+      {
+        reply: finalReply,
+        showLeadForm: showLeadFormEnabled,
+        widgetPosition, // 👈 TOTO IDE DO FRONTENDU
+      },
       { headers: CORS_HEADERS }
     );
   } catch (error) {

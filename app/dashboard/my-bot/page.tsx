@@ -105,6 +105,7 @@ export default function MyBotPage() {
                 <li>Over, či vie popísať tvoju firmu podľa nastavení bota.</li>
                 <li>Skús otázky, ktoré si pridal do FAQ &amp; firemné odpovede.</li>
                 <li>Skús aj „blbé“ otázky – mal by slušne priznať, čo nevie.</li>
+                <li>Skús kliknúť na možnosť „Chceš, aby sa ti niekto ozval? Zanechaj kontakt.“ a otestuj ukladanie leadov.</li>
               </ul>
               <p className="pt-1 text-[11px] text-slate-500">
                 Vpravo dole vidíš bublinku tvojho firemného bota – presne takto sa
@@ -132,6 +133,9 @@ export default function MyBotPage() {
                   <span className="text-slate-400">4.</span> Pozri si históriu
                   konverzácií a analytiku, aby si videl, aké otázky sa pýtajú
                   najviac.
+                </li>
+                <li>
+                  <span className="text-slate-400">5.</span> Otestuj aj formulár na zber kontaktov v chate – zákazník môže nechať email a ty ho uvidíš v prehľade leadov.
                 </li>
               </ul>
               <p className="pt-2 text-[11px] text-slate-500">
