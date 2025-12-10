@@ -24,6 +24,14 @@ export async function OPTIONS() {
   });
 }
 
+// Limity pre plány
+const PLAN_LIMITS: Record<string, number> = {
+  starter: 1000,
+  pro: 10000,
+  agency: 999999,
+  unlimited: 999999999, // Pre admina/super admina
+};
+
 // Jednoduchá kategorizácia otázky podľa obsahu
 function categorizeQuestion(question: string): string {
   const q = question.toLowerCase();
@@ -109,6 +117,7 @@ export async function POST(req: Request) {
     const text = (body?.message as string | undefined)?.trim() || "";
     const ownerUserIdFromBody =
       (body?.ownerUserId as string | undefined) || null;
+    const conversationHistory = (body?.conversationHistory as Array<{ role: string; content: string }> | undefined) || [];
 
     if (!text) {
       return NextResponse.json(
@@ -140,6 +149,74 @@ export async function POST(req: Request) {
     // - ak ide o klientsky bot => jeho user_id
     // - inak => tvoj PLATFORM_OWNER_ID (globálny bot)
     const settingsUserId: string | null = ownerUserId ?? PLATFORM_OWNER_ID;
+
+    // Kontrola limitov a reset kreditov (len pre klientských botov, nie pre globálneho)
+    if (ownerUserId) {
+      // Načítanie plánu používateľa
+      const { data: profileData } = await supabaseServer
+        .from("users_profile")
+        .select("plan, is_active, is_admin, credits_used_this_month, created_at, last_credit_reset")
+        .eq("id", ownerUserId)
+        .single();
+
+      // Kontrola, či je účet aktívny
+      if (profileData?.is_active === false) {
+        return NextResponse.json(
+          { error: "Tvoj účet je zablokovaný. Kontaktuj podporu pre viac informácií." },
+          { status: 403, headers: CORS_HEADERS }
+        );
+      }
+
+      // Kontrola limitov
+      // Ak je admin alebo super admin, má unlimited
+      const isUserAdmin = profileData?.is_admin === true || ownerUserId === PLATFORM_OWNER_ID;
+      const userPlan = isUserAdmin ? "unlimited" : (profileData?.plan || "starter");
+      const limit = PLAN_LIMITS[userPlan] || 1000;
+
+      // Admin/Super Admin má unlimited - preskoč kontrolu limitov
+      if (!isUserAdmin) {
+        const now = new Date();
+        
+        // Určenie dátumu, od ktorého sa počíta 30-dňový cyklus
+        // Ak existuje last_credit_reset, použij ho, inak použij created_at
+        const resetBaseDate = profileData?.last_credit_reset 
+          ? new Date(profileData.last_credit_reset)
+          : (profileData?.created_at ? new Date(profileData.created_at) : now);
+        
+        // Vypočítaj, koľko dní uplynulo od posledného resetu (alebo od vytvorenia účtu)
+        const daysSinceReset = Math.floor(
+          (now.getTime() - resetBaseDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+
+        // Ak uplynulo 30 dní, resetuj kredity
+        let creditsUsed = profileData?.credits_used_this_month || 0;
+        let actualDaysSinceReset = daysSinceReset;
+        
+        if (daysSinceReset >= 30) {
+          // Reset kreditov
+          await supabaseServer
+            .from("users_profile")
+            .update({
+              credits_used_this_month: 0,
+              last_credit_reset: now.toISOString(),
+            })
+            .eq("id", ownerUserId);
+          creditsUsed = 0;
+          actualDaysSinceReset = 0; // Po resetovaní je to 0 dní
+        }
+
+        // Kontrola limitov
+        if (creditsUsed >= limit) {
+          const daysUntilReset = Math.max(1, 30 - (actualDaysSinceReset % 30));
+          return NextResponse.json(
+            { 
+              error: `Dosiahol si limit konverzácií (${limit}). Tvoje kredity sa resetujú za ${daysUntilReset} dní alebo môžeš upgrade-núť na vyšší plán.` 
+            },
+            { status: 429, headers: CORS_HEADERS }
+          );
+        }
+      }
+    }
 
     // základné default nastavenia
     let companyName: string;
@@ -197,8 +274,8 @@ export async function POST(req: Request) {
           ) {
             tone = settingsData.tone;
           }
-          if (settingsData.show_lead_form_enabled === true) {
-            showLeadFormEnabled = true;
+          if (typeof settingsData.show_lead_form_enabled === "boolean") {
+            showLeadFormEnabled = settingsData.show_lead_form_enabled;
           }
           if (
             settingsData.widget_position === "left" ||
@@ -267,11 +344,20 @@ ${faqText || "(Zatiaľ nemáš žiadne firemné FAQ, odpovedaj všeobecne, ale u
 Pravidlá:
 - Odpovedaj vždy v slovenčine.
 - Buď stručný, ale konkrétny.
-- Nepíš v každej odpovedi „Som ... AI chatbot pre firmu ...“. Predstav sa len keď to dáva zmysel (napr. na začiatku konverzácie).
+- NIKDY sa nepredstavuj a NEPOZDRAVUJ v odpovediach, ak už prebieha konverzácia. Predstav sa a pozdrav len na úplnom začiatku konverzácie (prvá správa užívateľa).
+- Nepíš v každej odpovedi „Som ... AI chatbot pre firmu ...". Predstav sa len keď to dáva zmysel (napr. na začiatku konverzácie).
 - Ak niečo nevieš, priznaj to a navrhni ďalší krok (kontakt, email, telefón, formulár).
+- Odpovedaj priamo na otázku bez zbytočných pozdravov a opakovaní.
       `.trim();
 
     // 4) Volanie OpenAI API
+    // Zostavíme správy: system prompt + história konverzácie + aktuálna správa
+    const messagesForAPI = [
+      { role: "system", content: systemPrompt },
+      ...conversationHistory,
+      { role: "user", content: text },
+    ];
+
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -280,10 +366,7 @@ Pravidlá:
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: text },
-        ],
+        messages: messagesForAPI,
         temperature: 0.4,
       }),
     });
@@ -306,11 +389,32 @@ Pravidlá:
 
     const finalReply = rawReply;
 
-    // 5) Uloženie do chat_logs
+    // 5) Zvýšenie kreditov a uloženie do chat_logs
     const category = categorizeQuestion(text);
 
     try {
+      // Zvýš kredity pre klientského bota (nie pre globálneho)
       if (ownerUserId) {
+        try {
+          // Zvýš credits_used_this_month
+          const { data: currentProfile } = await supabaseServer
+            .from("users_profile")
+            .select("credits_used_this_month")
+            .eq("id", ownerUserId)
+            .single();
+          
+          const currentCredits = currentProfile?.credits_used_this_month || 0;
+          await supabaseServer
+            .from("users_profile")
+            .update({
+              credits_used_this_month: currentCredits + 1,
+            })
+            .eq("id", ownerUserId);
+        } catch (creditError) {
+          console.warn("Nepodarilo sa zvýšiť kredity:", creditError);
+        }
+
+        // Ulož chat log
         await supabaseServer.from("chat_logs").insert({
           owner_user_id: ownerUserId,
           question: text,
@@ -318,6 +422,7 @@ Pravidlá:
           category,
         });
       } else {
+        // Globálny bot - len ulož log
         await supabaseServer.from("chat_logs").insert({
           question: text,
           answer: finalReply,
@@ -325,13 +430,13 @@ Pravidlá:
         });
       }
     } catch (logError) {
-      console.warn("Nepodarilo sa uložiť chat log:", logError);
+      console.warn("Nepodarilo sa uložiť chat log alebo zvýšiť kredity:", logError);
     }
 
     return NextResponse.json(
       {
         reply: finalReply,
-        showLeadForm: showLeadFormEnabled,
+        useLeadsForm: showLeadFormEnabled,
         widgetPosition, // 👈 TOTO IDE DO FRONTENDU
       },
       { headers: CORS_HEADERS }

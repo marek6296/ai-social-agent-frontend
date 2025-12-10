@@ -2,163 +2,169 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
 import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabaseClient";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AnimatedPage } from "@/components/AnimatedPage";
+import Link from "next/link";
+import { ArrowRight, UserPlus } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSignup(e: FormEvent) {
     e.preventDefault();
+    setLoading(true);
     setError(null);
 
-    // základna validácia – všetky polia povinné
-    if (!firstName || !lastName || !email || !password) {
-      setError("Vyplň prosím všetky polia.");
-      return;
-    }
-
-    // jednoduchá validácia formátu emailu
-    const emailPattern = /^\S+@\S+\.\S+$/;
-    if (!emailPattern.test(email)) {
-      setError("Zadaj prosím platný email.");
-      return;
-    }
-
-    // heslo – minimálna dĺžka
-    if (password.length < 8) {
-      setError("Heslo musí mať aspoň 8 znakov.");
-      return;
-    }
-
-    setLoading(true);
-
     try {
-      const redirectUrl =
-        typeof window !== "undefined"
-          ? `${window.location.origin}/login` // po potvrdení emailu pôjde na /login
-          : undefined;
-
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            firstName,
-            lastName,
+            first_name: firstName,
+            last_name: lastName,
           },
-          emailRedirectTo: redirectUrl,
         },
       });
 
-      if (error) {
-        const msg = error.message.toLowerCase();
-        if (msg.includes("already") && (msg.includes("registered") || msg.includes("exists"))) {
-          setError("Tento email už je zaregistrovaný. Skús sa prihlásiť.");
-        } else {
-          setError("Registráciu sa nepodarilo dokončiť: " + error.message);
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        // Vytvorenie users_profile záznamu s default plánom "starter"
+        const { error: profileError } = await supabase
+          .from("users_profile")
+          .insert({
+            id: data.user.id,
+            plan: "starter",
+            is_active: true,
+            is_admin: false,
+            credits_used_this_month: 0,
+            last_credit_reset: new Date().toISOString(),
+          });
+
+        if (profileError) {
+          console.error("Failed to create user profile:", profileError);
+          // Pokračujeme aj keď sa nepodarilo vytvoriť profil (možno tabuľka neexistuje)
         }
-        return;
-      }
 
-      // ak Supabase nevytvoril session (napr. treba potvrdiť email alebo účet už existuje)
-      if (!data.session) {
-        setError(
-          "Registrácia nebola dokončená. Skontroluj prosím svoj email (potvrdenie) alebo skús sa prihlásiť, ak už účet existuje."
-        );
-        return;
+        router.push("/dashboard");
+        router.refresh();
       }
-
-      // úspešná registrácia so session
-      router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message ?? "Nastala neznáma chyba");
-    } finally {
+    } catch (err) {
+      console.error("Signup error:", err);
+      setError("Nastala chyba pri registrácii. Skús to znova.");
       setLoading(false);
     }
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <motion.div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h1 className="text-2xl font-bold mb-6 text-center">Vytvoriť účet</h1>
-
-          <form onSubmit={handleSignup} className="space-y-4">
-
-            <div>
-              <label className="block text-sm mb-1">Meno</label>
-              <input
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-emerald-500"
-                placeholder="Tvoje meno"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm mb-1">Priezvisko</label>
-              <input
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-emerald-500"
-                placeholder="Tvoje priezvisko"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm mb-1">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-emerald-500"
-                placeholder="ty@firma.sk"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm mb-1">Heslo</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-emerald-500"
-                placeholder="••••••••"
-                required
-              />
-            </div>
-
-            {error && <p className="text-red-400 text-sm">{error}</p>}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-black font-semibold py-2 rounded-md"
-            >
-              {loading ? "Vytváram účet..." : "Vytvoriť účet"}
-            </button>
-          </form>
-
-          <p className="text-xs text-slate-400 mt-4 text-center">
-            Už máš účet?{" "}
-            <a href="/login" className="text-emerald-400 hover:underline">
-              Prihlásiť sa
-            </a>
-          </p>
+    <AnimatedPage>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <Card>
+            <CardHeader className="space-y-1 text-center">
+              <div className="flex justify-center mb-4">
+                <div className="h-12 w-12 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">
+                  AI
+                </div>
+              </div>
+              <CardTitle className="text-2xl font-bold">Vytvoriť účet</CardTitle>
+              <CardDescription>
+                Zaregistruj sa a začni používať AI Social Agent pre svoj web.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSignup} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">Meno</Label>
+                    <Input
+                      id="firstName"
+                      type="text"
+                      placeholder="Ján"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      disabled={loading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Priezvisko</Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      placeholder="Novák"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="ty@firma.sk"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Heslo</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    minLength={6}
+                  />
+                </div>
+                {error && (
+                  <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                    {error}
+                  </div>
+                )}
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Vytváram účet..." : "Vytvoriť účet"}
+                  {!loading && <UserPlus className="ml-2 h-4 w-4" />}
+                </Button>
+              </form>
+              <div className="mt-4 text-center text-sm">
+                <span className="text-muted-foreground">Už máš účet? </span>
+                <Link href="/login" className="text-primary hover:underline font-medium">
+                  Prihlásiť sa
+                  <ArrowRight className="inline ml-1 h-3 w-3" />
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
-      </motion.div>
-    </main>
+      </div>
+    </AnimatedPage>
   );
 }

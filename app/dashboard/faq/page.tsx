@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabaseClient";
+import { AnimatedPage } from "@/components/AnimatedPage";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Plus, Trash2, MessageSquare, Download, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 type FaqItem = {
@@ -19,7 +28,6 @@ export default function FaqPage() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
 
-  // načítanie FAQ po načítaní stránky
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -84,13 +92,13 @@ export default function FaqPage() {
         question: question.trim(),
         answer: answer.trim(),
       })
-      .select("id, question, answer")
+      .select()
       .single();
 
     if (error) {
       console.error(error);
       setError("Nepodarilo sa pridať FAQ.");
-    } else if (data) {
+    } else {
       setItems((prev) => [data as FaqItem, ...prev]);
       setQuestion("");
       setAnswer("");
@@ -113,112 +121,235 @@ export default function FaqPage() {
     }
   };
 
+  const handleExport = () => {
+    const csv = [
+      ["Otázka", "Odpoveď"],
+      ...items.map((item) => [item.question, item.answer]),
+    ]
+      .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `faq-export-${new Date().toISOString().split("T")[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-        <p className="text-sm text-slate-400">Načítavam FAQ…</p>
-      </main>
+      <AnimatedPage>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="text-center"
+          >
+            <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">Načítavam FAQ…</p>
+          </motion.div>
+        </div>
+      </AnimatedPage>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        <header className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold">FAQ &amp; firemné odpovede</h1>
-            <p className="text-xs text-slate-400">
-              Tu si vieš pridať často kladené otázky a odpovede, ktoré bude AI
-              používať pri odpovedaní návštevníkom.
-            </p>
-          </div>
-          <Link
-            href="/dashboard"
-            className="text-xs text-slate-400 hover:text-slate-200"
+    <AnimatedPage>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+          {/* Header */}
+          <motion.header
+            className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            ← Späť na dashboard
-          </Link>
-        </header>
-
-        {error && (
-          <div className="rounded-lg border border-red-500/60 bg-red-500/10 px-3 py-2 text-xs text-red-300">
-            {error}
-          </div>
-        )}
-
-        {/* Formulár na pridanie FAQ */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
-          <h2 className="text-sm font-semibold mb-1">Pridať novú FAQ</h2>
-          <form onSubmit={handleAdd} className="space-y-3">
             <div>
-              <label className="block text-xs text-slate-400 mb-1">
-                Otázka (čo sa klienti pýtajú)
-              </label>
-              <input
-                type="text"
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                placeholder="Napr. Ako funguje váš produkt?"
-              />
+              <Badge variant="secondary" className="mb-2 gap-1.5">
+                <MessageSquare className="h-3 w-3" />
+                FAQ & firemné odpovede
+              </Badge>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                FAQ &amp; firemné odpovede
+              </h1>
+              <p className="text-muted-foreground mt-2 max-w-2xl">
+                Tu si vieš pridať často kladené otázky a odpovede, ktoré bude AI používať pri odpovedaní návštevníkom.
+              </p>
             </div>
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">
-                Odpoveď (čo má AI odpovedať)
-              </label>
-              <textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                rows={3}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                placeholder="Stručná, jasná odpoveď v štýle tvojej značky."
-              />
+            <div className="flex items-center gap-2 flex-wrap">
+              {items.length > 0 && (
+                <Button variant="outline" onClick={handleExport} className="gap-2">
+                  <Download className="h-4 w-4" />
+                  Export CSV
+                </Button>
+              )}
+              <Button variant="outline" asChild>
+                <Link href="/dashboard" className="gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Späť
+                </Link>
+              </Button>
             </div>
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-700 disabled:text-slate-400 text-black"
-              >
-                {saving ? "Ukladám…" : "Pridať FAQ"}
-              </button>
-            </div>
-          </form>
-        </section>
+          </motion.header>
 
-        {/* Zoznam FAQ */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
-          <h2 className="text-sm font-semibold">Tvoje FAQ</h2>
-          {items.length === 0 ? (
-            <p className="text-xs text-slate-400">
-              Zatiaľ nemáš žiadne FAQ. Pridaj aspoň 3–5 najčastejších otázok
-              a odpovedí.
-            </p>
-          ) : (
-            <ul className="space-y-3">
-              {items.map((item) => (
-                <li
-                  key={item.id}
-                  className="border border-slate-800 rounded-lg p-3 bg-slate-950/50"
-                >
-                  <p className="text-xs font-semibold text-slate-100 mb-1">
-                    Q: {item.question}
-                  </p>
-                  <p className="text-xs text-slate-300 mb-2">
-                    A: {item.answer}
-                  </p>
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="text-[11px] text-red-400 hover:text-red-300"
-                  >
-                    Odstrániť
-                  </button>
-                </li>
-              ))}
-            </ul>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-lg border border-destructive bg-destructive/10 text-destructive text-sm backdrop-blur-sm"
+            >
+              {error}
+            </motion.div>
           )}
-        </section>
+
+          {/* Add FAQ Form */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="border-border/50 bg-gradient-to-br from-card to-card/50">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Plus className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>Pridať novú FAQ</CardTitle>
+                    <CardDescription>
+                      Pridaj otázku a odpoveď, ktoré bude tvoj bot používať pri komunikácii.
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleAdd} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="question" className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      Otázka (čo sa klienti pýtajú)
+                    </Label>
+                    <Input
+                      id="question"
+                      value={question}
+                      onChange={(e) => setQuestion(e.target.value)}
+                      placeholder="Napr. Ako funguje váš produkt?"
+                      className="bg-background"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="answer" className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      Odpoveď (čo má AI odpovedať)
+                    </Label>
+                    <Textarea
+                      id="answer"
+                      value={answer}
+                      onChange={(e) => setAnswer(e.target.value)}
+                      rows={4}
+                      placeholder="Stručná, jasná odpoveď v štýle tvojej značky."
+                      className="bg-background resize-none"
+                    />
+                  </div>
+                  <Button type="submit" disabled={saving} className="gap-2">
+                    {saving ? (
+                      <>
+                        <div className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                        Ukladám…
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4" />
+                        Pridať FAQ
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* FAQ List */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="border-border/50 bg-gradient-to-br from-card to-card/50">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 mb-2">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                      Tvoje FAQ
+                    </CardTitle>
+                    <CardDescription>
+                      {items.length === 0
+                        ? "Zatiaľ nemáš žiadne FAQ. Pridaj aspoň 3–5 najčastejších otázok a odpovedí."
+                        : `Máš ${items.length} ${items.length === 1 ? "FAQ položku" : items.length < 5 ? "FAQ položky" : "FAQ položiek"}.`}
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {items.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Zatiaľ nemáš žiadne FAQ.</p>
+                    <p className="text-sm mt-1">Pridaj aspoň 3–5 najčastejších otázok a odpovedí.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {items.map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                      >
+                        <Card className="border-border/50 hover:border-primary/50 transition-all hover:shadow-md group">
+                          <CardContent className="p-6">
+                            <div className="space-y-4">
+                              <div>
+                                <Badge variant="outline" className="mb-3 bg-primary/5 border-primary/20 text-primary">
+                                  Otázka
+                                </Badge>
+                                <p className="font-semibold text-base leading-relaxed">{item.question}</p>
+                              </div>
+                              <div>
+                                <Badge variant="outline" className="mb-3 bg-muted">
+                                  Odpoveď
+                                </Badge>
+                                <p className="text-muted-foreground leading-relaxed">{item.answer}</p>
+                              </div>
+                              <div className="flex justify-end pt-2 border-t border-border/50">
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDelete(item.id)}
+                                  className="gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Odstrániť
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
       </div>
-    </main>
+    </AnimatedPage>
   );
 }

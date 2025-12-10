@@ -2,9 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabaseClient";
 import { ChatWidget } from "@/components/ChatWidget";
 import { AnimatedPage } from "@/components/AnimatedPage";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Bot, Sparkles, CheckCircle2, Zap, Lightbulb } from "lucide-react";
+import Link from "next/link";
 
 type UserProfile = {
   id: string;
@@ -47,9 +53,17 @@ export default function MyBotPage() {
   if (loading) {
     return (
       <AnimatedPage>
-        <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900 text-white flex items-center justify-center">
-          <p className="text-sm text-slate-400">Načítavam tvojho bota…</p>
-        </main>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="text-center"
+          >
+            <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">Načítavam tvojho bota…</p>
+          </motion.div>
+        </div>
       </AnimatedPage>
     );
   }
@@ -60,95 +74,169 @@ export default function MyBotPage() {
 
   return (
     <AnimatedPage>
-      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900 text-white">
-        <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12 flex flex-col gap-6 md:gap-8">
-          <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-800/80 pb-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+          {/* Header */}
+          <motion.header
+            className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <div>
-              <p className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-emerald-400/80 mb-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <Badge variant="secondary" className="mb-2 gap-1.5">
+                <Bot className="h-3 w-3" />
                 Test tvojho AI chatbota
-              </p>
-              <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+              </Badge>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
                 {fullName || user.email} – tvoj firemný bot
               </h1>
-              <p className="text-xs md:text-sm text-slate-400 mt-2 max-w-xl">
-                Na tejto stránke si vieš vyskúšať, ako bude tvoj AI chatbot
-                odpovedať reálnym zákazníkom na tvojej webovej stránke – s tvojimi
-                nastaveniami bota a firemnými FAQ.
+              <p className="text-muted-foreground mt-2 max-w-2xl">
+                Na tejto stránke si vieš vyskúšať, ako bude tvoj AI chatbot odpovedať reálnym zákazníkom na tvojej webovej stránke – s tvojimi nastaveniami bota a firemnými FAQ.
               </p>
             </div>
-
-            <div className="flex flex-col items-start md:items-end gap-2 text-[11px] text-slate-400">
-              <a
-                href="/dashboard"
-                className="inline-flex items-center gap-2 text-[11px] font-semibold px-3 py-2 rounded-lg bg-slate-900/80 border border-slate-700 hover:border-slate-500 hover:bg-slate-800 transition-colors"
-              >
-                ← Späť na dashboard
-              </a>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-800 text-[11px]">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Tento test vidíš len ty ako administrátor.</span>
-              </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="outline" className="text-xs gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                Tento test vidíš len ty
+              </Badge>
+              <Button variant="outline" asChild>
+                <Link href="/dashboard" className="gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Späť
+                </Link>
+              </Button>
             </div>
-          </header>
+          </motion.header>
 
-          <section className="grid md:grid-cols-2 gap-4 md:gap-6 items-start">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 md:p-5 shadow-lg shadow-black/40 text-xs md:text-sm text-slate-300 space-y-3">
-              <h2 className="text-sm md:text-base font-semibold flex items-center gap-2">
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 border border-emerald-400/40 text-[13px]">
-                  🤖
-                </span>
-                Ako testovať tvojho bota
-              </h2>
-              <ul className="list-disc list-inside space-y-1.5">
-                <li>Spýtaj sa na cenu, balíky alebo spoluprácu.</li>
-                <li>Over, či vie popísať tvoju firmu podľa nastavení bota.</li>
-                <li>Skús otázky, ktoré si pridal do FAQ &amp; firemné odpovede.</li>
-                <li>Skús aj „blbé“ otázky – mal by slušne priznať, čo nevie.</li>
-                <li>Skús kliknúť na možnosť „Chceš, aby sa ti niekto ozval? Zanechaj kontakt.“ a otestuj ukladanie leadov.</li>
-              </ul>
-              <p className="pt-1 text-[11px] text-slate-500">
-                Vpravo dole vidíš bublinku tvojho firemného bota – presne takto sa
-                bude správať na tvojej webovej stránke.
-              </p>
-            </div>
+          {/* Tips */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="border-border/50 bg-gradient-to-br from-card to-card/50 h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                    </div>
+                    Ako testovať tvojho bota
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <ul className="space-y-3 text-sm">
+                    {[
+                      "Spýtaj sa na cenu, balíky alebo spoluprácu.",
+                      "Over, či vie popísať tvoju firmu podľa nastavení bota.",
+                      "Skús otázky, ktoré si pridal do FAQ & firemné odpovede.",
+                      "Skús aj \"blbé\" otázky – mal by slušne priznať, čo nevie.",
+                      "Skús kliknúť na možnosť \"Chceš, aby sa ti niekto ozval? Zanechaj kontakt.\" a otestuj ukladanie leadov.",
+                    ].map((tip, index) => (
+                      <motion.li
+                        key={index}
+                        className="flex items-start gap-3"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 + index * 0.05 }}
+                      >
+                        <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                        <span className="leading-relaxed">{tip}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-muted-foreground pt-2 border-t border-border/50">
+                    Vpravo dole vidíš bublinku tvojho firemného bota – presne takto sa bude správať na tvojej webovej stránke.
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-            <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 md:p-5 shadow-lg shadow-black/40 text-[11px] md:text-xs text-slate-300 space-y-3">
-              <h3 className="text-sm font-semibold mb-1">Tipy pre lepšie odpovede</h3>
-              <ul className="space-y-1.5">
-                <li>
-                  <span className="text-slate-400">1.</span> Dopln si podrobný popis
-                  firmy v nastaveniach bota – AI bude vedieť, čo presne ponúkaš.
-                </li>
-                <li>
-                  <span className="text-slate-400">2.</span> Pridaj najčastejšie
-                  otázky do sekcie <strong>FAQ &amp; firemné odpovede</strong>.
-                </li>
-                <li>
-                  <span className="text-slate-400">3.</span> Otestuj konverzácie v
-                  rôznych scenároch (nový zákazník, existujúci klient,
-                  reklamácia...).
-                </li>
-                <li>
-                  <span className="text-slate-400">4.</span> Pozri si históriu
-                  konverzácií a analytiku, aby si videl, aké otázky sa pýtajú
-                  najviac.
-                </li>
-                <li>
-                  <span className="text-slate-400">5.</span> Otestuj aj formulár na zber kontaktov v chate – zákazník môže nechať email a ty ho uvidíš v prehľade leadov.
-                </li>
-              </ul>
-              <p className="pt-2 text-[11px] text-slate-500">
-                Všetky zmeny v nastaveniach bota a FAQ sa okamžite prejavia aj v
-                tomto teste.
-              </p>
-            </div>
-          </section>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+            >
+              <Card className="border-border/50 bg-gradient-to-br from-card to-card/50 h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                      <Lightbulb className="h-5 w-5 text-amber-500" />
+                    </div>
+                    Tipy pre lepšie odpovede
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <ul className="space-y-3 text-sm">
+                    {[
+                      { num: "1", text: "Dopln si podrobný popis firmy v nastaveniach bota – AI bude vedieť, čo presne ponúkaš." },
+                      { num: "2", text: "Pridaj najčastejšie otázky do sekcie FAQ & firemné odpovede." },
+                      { num: "3", text: "Otestuj konverzácie v rôznych scenároch (nový zákazník, existujúci klient, reklamácia...)." },
+                      { num: "4", text: "Pozri si históriu konverzácií a analytiku, aby si videl, aké otázky sa pýtajú najviac." },
+                      { num: "5", text: "Otestuj aj formulár na zber kontaktov v chate – zákazník môže nechať email a ty ho uvidíš v prehľade leadov." },
+                    ].map((tip, index) => (
+                      <motion.li
+                        key={index}
+                        className="flex items-start gap-3"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.25 + index * 0.05 }}
+                      >
+                        <span className="h-6 w-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                          {tip.num}
+                        </span>
+                        <span className="leading-relaxed">{tip.text}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-muted-foreground pt-2 border-t border-border/50">
+                    Všetky zmeny v nastaveniach bota a FAQ sa okamžite prejavia aj v tomto teste.
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+
+          {/* Quick Actions */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="border-border/50 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-semibold mb-1 flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-primary" />
+                      Rýchle akcie
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Uprav nastavenia bota alebo pridaj FAQ pre lepšie odpovede
+                    </p>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button variant="outline" asChild>
+                      <Link href="/dashboard/bot-settings">
+                        Nastavenia bota
+                      </Link>
+                    </Button>
+                    <Button asChild>
+                      <Link href="/dashboard/faq">
+                        Pridať FAQ
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
 
-        {/* TU JE KLÚČ: bublina s botom KONKRÉTNEHO USERA */}
+        {/* Chat Widget */}
         <ChatWidget ownerUserId={user.id} />
-      </main>
+      </div>
     </AnimatedPage>
   );
 }

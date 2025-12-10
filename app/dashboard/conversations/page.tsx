@@ -1,11 +1,17 @@
-// Improved, animated, styled version with framer-motion and AnimatedPage
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabaseClient";
 import { AnimatedPage } from "@/components/AnimatedPage";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, Search, Download, FileText, Filter, Calendar, MessageSquare } from "lucide-react";
+import Link from "next/link";
 
 type ChatLog = {
   id: string;
@@ -18,7 +24,6 @@ type ChatLog = {
 function inferCategory(log: ChatLog): string {
   const q = (log.question || "").toLowerCase();
 
-  // Cena / pricing
   if (
     q.includes("cena") ||
     q.includes("koľko stojí") ||
@@ -34,7 +39,6 @@ function inferCategory(log: ChatLog): string {
     return "Cena";
   }
 
-  // Objednávky / nákupy
   if (
     q.includes("objednávka") ||
     q.includes("objednavka") ||
@@ -50,7 +54,6 @@ function inferCategory(log: ChatLog): string {
     return "Objednávky";
   }
 
-  // Podpora / kontakt
   if (
     q.includes("podpora") ||
     q.includes("support") ||
@@ -65,7 +68,6 @@ function inferCategory(log: ChatLog): string {
     return "Podpora";
   }
 
-  // Technické
   if (
     q.includes("nefunguje") ||
     q.includes("chyba") ||
@@ -81,7 +83,6 @@ function inferCategory(log: ChatLog): string {
     return "Technické";
   }
 
-  // Produkt / služba
   if (
     q.includes("čo je") ||
     q.includes("co je") ||
@@ -95,11 +96,20 @@ function inferCategory(log: ChatLog): string {
     return "Produkt / služba";
   }
 
-  // Ak máme kategóriu v DB, použijeme ju
   if (log.category) return log.category;
-
   return "Iné";
 }
+
+const categories = ["Všetko", "Cena", "Objednávky", "Podpora", "Technické", "Produkt / služba", "Iné"];
+
+const categoryColors: Record<string, string> = {
+  Cena: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+  Objednávky: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+  Podpora: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+  Technické: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+  "Produkt / služba": "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+  Iné: "bg-slate-500/10 text-slate-500 border-slate-500/20",
+};
 
 export default function ConversationsPage() {
   const [logs, setLogs] = useState<ChatLog[]>([]);
@@ -107,15 +117,12 @@ export default function ConversationsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchTarget, setSearchTarget] = useState<
-    "both" | "question" | "answer"
-  >("both");
+  const [searchTarget, setSearchTarget] = useState<"both" | "question" | "answer">("both");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [useDateFilter, setUseDateFilter] = useState(false);
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [categoryFilter, setCategoryFilter] = useState<string>("Všetko");
-
   const [selectedLog, setSelectedLog] = useState<ChatLog | null>(null);
 
   useEffect(() => {
@@ -170,11 +177,9 @@ export default function ConversationsPage() {
   };
 
   const filteredLogs = (() => {
-    // základné zoradenie podľa nastavenia
     const base = sortOrder === "desc" ? logs : [...logs].reverse();
 
     return base.filter((log) => {
-      // textový filter
       let sourceText = "";
       if (searchTarget === "both") {
         sourceText = (log.question + " " + log.answer).toLowerCase();
@@ -187,24 +192,20 @@ export default function ConversationsPage() {
       const term = searchTerm.toLowerCase();
       const textMatch = term ? sourceText.includes(term) : true;
 
-      // filter podľa kategórie – používame odhad kategórie z otázky
       const effectiveCategory = inferCategory(log);
       const categoryMatch =
         categoryFilter === "Všetko"
           ? true
           : effectiveCategory === categoryFilter;
 
-      // ak nepoužívame dátumy, riešime len text + kategóriu
       if (!useDateFilter) {
         return textMatch && categoryMatch;
       }
 
       const created = new Date(log.created_at).getTime();
-
       const fromOk = dateFrom
         ? created >= new Date(dateFrom + "T00:00:00").getTime()
         : true;
-
       const toOk = dateTo
         ? created <= new Date(dateTo + "T23:59:59").getTime()
         : true;
@@ -213,396 +214,477 @@ export default function ConversationsPage() {
     });
   })();
 
+  const handleExportCSV = () => {
+    const headers = ["Dátum", "Kategória", "Otázka", "Odpoveď"];
+    const rows = filteredLogs.map((log) => [
+      formatDate(log.created_at),
+      inferCategory(log),
+      `"${log.question.replace(/"/g, '""')}"`,
+      `"${log.answer.replace(/"/g, '""')}"`,
+    ]);
+    const csv = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `konverzacii-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+  };
+
+  const handleExportJSON = () => {
+    const json = JSON.stringify(
+      filteredLogs.map((log) => ({
+        dátum: formatDate(log.created_at),
+        kategória: inferCategory(log),
+        otázka: log.question,
+        odpoveď: log.answer,
+      })),
+      null,
+      2
+    );
+    const blob = new Blob([json], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `konverzacii-${new Date().toISOString().split("T")[0]}.json`;
+    link.click();
+  };
+
   if (loading) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 text-white flex items-center justify-center relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -right-32 top-10 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
-          <div className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
-          <div className="absolute inset-x-0 top-40 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent opacity-40" />
+      <AnimatedPage>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="text-center"
+          >
+            <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">Načítavam konverzácie…</p>
+          </motion.div>
         </div>
-        <motion.p
-          className="text-sm text-slate-400"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        >
-          Načítavam konverzácie…
-        </motion.p>
-      </main>
+      </AnimatedPage>
     );
   }
 
   return (
     <AnimatedPage>
-      <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 text-white relative overflow-hidden">
-        {/* Dekoratívne pozadie */}
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -right-32 top-10 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
-          <div className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
-          <div className="absolute inset-x-0 top-32 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent opacity-40" />
-        </div>
-
-        <div className="max-w-6xl mx-auto px-4 py-8 md:py-10 space-y-6">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
           {/* Header */}
           <motion.header
-            className="flex items-center justify-between gap-3 border-b border-slate-800/80 pb-4"
-            initial={{ opacity: 0, y: 16 }}
+            className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b"
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            transition={{ duration: 0.5 }}
           >
-            <motion.div
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
-            >
-              <p className="text-xs text-emerald-300 mb-1">
+            <div>
+              <Badge variant="secondary" className="mb-2 gap-1.5">
+                <FileText className="h-3 w-3" />
                 Prehľad reálnych konverzácií
-              </p>
-              <h1 className="text-xl md:text-2xl font-semibold tracking-tight">
+              </Badge>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
                 Konverzácie tvojho AI bota
               </h1>
-              <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-                Všetko, čo tvoj bot riešil s návštevníkmi. Ideálne na kontrolu
-                kvality odpovedí, pochopenie najčastejších otázok a zlepšovanie
-                FAQ a nastavení bota.
+              <p className="text-muted-foreground mt-2 max-w-2xl">
+                Všetko, čo tvoj bot riešil s návštevníkmi. Ideálne na kontrolu kvality odpovedí, pochopenie najčastejších otázok a zlepšovanie FAQ a nastavení bota.
               </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut", delay: 0.08 }}
-            >
-              <Link
-                href="/dashboard"
-                className="text-xs text-slate-400 hover:text-slate-200"
-              >
-                ← Späť na dashboard
-              </Link>
-            </motion.div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {filteredLogs.length > 0 && (
+                <>
+                  <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-2">
+                    <Download className="h-4 w-4" />
+                    CSV
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleExportJSON} className="gap-2">
+                    <Download className="h-4 w-4" />
+                    JSON
+                  </Button>
+                </>
+              )}
+              <Button variant="outline" asChild>
+                <Link href="/dashboard" className="gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Späť
+                </Link>
+              </Button>
+            </div>
           </motion.header>
 
           {error && (
             <motion.div
-              className="rounded-lg border border-red-500/60 bg-red-500/10 px-3 py-2 text-xs text-red-300"
-              initial={{ opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="p-4 rounded-lg border border-destructive bg-destructive/10 text-destructive text-sm backdrop-blur-sm"
             >
               {error}
             </motion.div>
           )}
 
-          {/* Info badge */}
+          {/* Filters */}
           <motion.div
-            className="rounded-xl border border-slate-800/80 bg-slate-900/70 px-3 py-2 text-[11px] text-slate-300 flex items-start gap-2 shadow-sm"
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: "easeOut", delay: 0.12 }}
+            transition={{ delay: 0.1 }}
           >
-            <span className="mt-[2px] text-sm">💬</span>
-            <p>
-              Každá otázka a odpoveď ti pomáha pochopiť, na čo sa zákazníci najčastejšie
-              pýtajú. Kombinuj tento prehľad s Analytics a FAQ, aby bol tvoj bot stále
-              lepší.
-            </p>
-          </motion.div>
-
-          {/* Filtrovací panel */}
-          <motion.section
-            className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 space-y-4 shadow-lg shadow-black/40"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: "easeOut", delay: 0.16 }}
-          >
-            {/* Vrchný riadok – vyhľadávanie + režim vyhľadávania + kategórie */}
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div className="flex-1 space-y-2">
-                <label className="block text-[11px] uppercase tracking-wide text-slate-400">
-                  Vyhľadávanie
-                </label>
-                <input
-                  type="text"
-                  placeholder="napr. cena, objednávka, problém, email…"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/70"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <span className="block text-[11px] uppercase tracking-wide text-slate-400">
-                  Kde vyhľadávať
-                </span>
-                <div className="inline-flex rounded-full border border-slate-700 bg-slate-950/80 text-[11px]">
-                  <button
-                    type="button"
-                    onClick={() => setSearchTarget("both")}
-                    className={`px-3 py-1.5 rounded-full ${
-                      searchTarget === "both"
-                        ? "bg-emerald-500 text-black"
-                        : "text-slate-300 hover:bg-slate-800"
-                    }`}
-                  >
-                    Otázka + odpoveď
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSearchTarget("question")}
-                    className={`px-3 py-1.5 rounded-full ${
-                      searchTarget === "question"
-                        ? "bg-emerald-500 text-black"
-                        : "text-slate-300 hover:bg-slate-800"
-                    }`}
-                  >
-                    Len otázka
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSearchTarget("answer")}
-                    className={`px-3 py-1.5 rounded-full ${
-                      searchTarget === "answer"
-                        ? "bg-emerald-500 text-black"
-                        : "text-slate-300 hover:bg-slate-800"
-                    }`}
-                  >
-                    Len odpoveď
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <span className="block text-[11px] uppercase tracking-wide text-slate-400">
-                  Kategória
-                </span>
-                <div className="flex flex-wrap gap-2 text-[11px]">
-                  {[
-                    "Všetko",
-                    "Cena",
-                    "Objednávky",
-                    "Podpora",
-                    "Technické",
-                    "Produkt / služba",
-                    "Iné",
-                  ].map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setCategoryFilter(cat)}
-                      className={`px-3 py-1.5 rounded-full border ${
-                        categoryFilter === cat
-                          ? "bg-emerald-500 text-black border-emerald-400"
-                          : "border-slate-700 text-slate-300 hover:bg-slate-800"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Spodný riadok – dátum + zoradenie */}
-            <div className="flex flex-col md:flex-row gap-4 md:items-end md:justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-3 mb-1">
-                  <span className="text-[11px] uppercase tracking-wide text-slate-400">
-                    Dátumy
-                  </span>
-                  <div className="inline-flex rounded-full border border-slate-700 bg-slate-950/80 text-[11px]">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUseDateFilter(false);
-                        setDateFrom("");
-                        setDateTo("");
-                      }}
-                      className={`px-3 py-1.5 rounded-full ${
-                        !useDateFilter
-                          ? "bg-emerald-500 text-black"
-                          : "text-slate-300 hover:bg-slate-800"
-                      }`}
-                    >
-                      Všetky dátumy
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setUseDateFilter(true)}
-                      className={`px-3 py-1.5 rounded-full ${
-                        useDateFilter
-                          ? "bg-emerald-500 text-black"
-                          : "text-slate-300 hover:bg-slate-800"
-                      }`}
-                    >
-                      Filtrovať
-                    </button>
+            <Card className="border-border/50 bg-gradient-to-br from-card to-card/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Filter className="h-4 w-4 text-primary" />
+                  </div>
+                  Filtre a vyhľadávanie
+                </CardTitle>
+                <CardDescription>
+                  Filtruj a vyhľadávaj v konverzáciách podľa kategórie, dátumu alebo obsahu
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="search">Vyhľadávanie</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="search"
+                        placeholder="napr. cena, objednávka, problém..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9 h-[52px]"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Kde vyhľadávať</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(["both", "question", "answer"] as const).map((target) => (
+                        <button
+                          key={target}
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setSearchTarget(target);
+                          }}
+                          className={`relative p-3 rounded-xl border-2 text-center transition-all cursor-pointer overflow-hidden h-[52px] ${
+                            searchTarget === target
+                              ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                              : "border-border/50 hover:border-primary/30 hover:bg-muted/30"
+                          }`}
+                        >
+                          {searchTarget === target && (
+                            <div className="absolute top-0 right-0 w-0 h-0 border-l-[20px] border-l-transparent border-t-[20px] border-t-primary" />
+                          )}
+                          {searchTarget === target && (
+                            <div className="absolute top-1 right-1 text-white text-[10px] font-bold z-10">
+                              ✓
+                            </div>
+                          )}
+                          <div className="font-semibold text-sm">
+                            {target === "both" ? "Všetko" : target === "question" ? "Otázka" : "Odpoveď"}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex gap-3">
-                  <div className="space-y-1 flex-1">
-                    <label className="block text-[10px] text-slate-400">
-                      Od
-                    </label>
-                    <input
+                <Separator />
+
+                <div className="space-y-2">
+                  <Label>Kategória</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setCategoryFilter(cat);
+                        }}
+                        className={`relative px-4 py-2 rounded-xl border-2 text-sm font-semibold transition-all cursor-pointer overflow-hidden ${
+                          categoryFilter === cat
+                            ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                            : "border-border/50 hover:border-primary/30 hover:bg-muted/30"
+                        }`}
+                      >
+                        {categoryFilter === cat && (
+                          <div className="absolute top-0 right-0 w-0 h-0 border-l-[16px] border-l-transparent border-t-[16px] border-t-primary" />
+                        )}
+                        {categoryFilter === cat && (
+                          <div className="absolute top-0.5 right-0.5 text-white text-[9px] font-bold z-10">
+                            ✓
+                          </div>
+                        )}
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="grid md:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <Label>Filtrovať podľa dátumu</Label>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setUseDateFilter(!useDateFilter);
+                        if (!useDateFilter) {
+                          // Ak zapíname filter, ponecháme dátumy
+                        } else {
+                          // Ak vypíname filter, vymažeme dátumy
+                          setDateFrom("");
+                          setDateTo("");
+                        }
+                      }}
+                      className={`relative w-full p-3 rounded-xl border-2 text-center transition-all cursor-pointer overflow-hidden h-[52px] ${
+                        useDateFilter
+                          ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                          : "border-border/50 hover:border-primary/30 hover:bg-muted/30"
+                      }`}
+                    >
+                      {useDateFilter && (
+                        <div className="absolute top-0 right-0 w-0 h-0 border-l-[20px] border-l-transparent border-t-[20px] border-t-primary" />
+                      )}
+                      {useDateFilter && (
+                        <div className="absolute top-1 right-1 text-white text-[10px] font-bold z-10">
+                          ✓
+                        </div>
+                      )}
+                      <div className="font-semibold text-sm">
+                        {useDateFilter ? "Zapnuté" : "Vypnuté"}
+                      </div>
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <Label>Dátum od</Label>
+                    </div>
+                    <Input
                       type="date"
                       value={dateFrom}
-                      onChange={(e) => setDateFrom(e.target.value)}
+                      onChange={(e) => {
+                        setDateFrom(e.target.value);
+                        if (e.target.value) {
+                          setUseDateFilter(true);
+                        }
+                      }}
                       disabled={!useDateFilter}
-                      className="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500/70 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="h-[52px]"
                     />
                   </div>
-                  <div className="space-y-1 flex-1">
-                    <label className="block text-[10px] text-slate-400">
-                      Do
-                    </label>
-                    <input
+                  <div className="space-y-2">
+                    <Label>Dátum do</Label>
+                    <Input
                       type="date"
                       value={dateTo}
-                      onChange={(e) => setDateTo(e.target.value)}
+                      onChange={(e) => {
+                        setDateTo(e.target.value);
+                        if (e.target.value) {
+                          setUseDateFilter(true);
+                        }
+                      }}
                       disabled={!useDateFilter}
-                      className="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500/70 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="h-[52px]"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label>Zoradenie</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSortOrder("desc");
+                        }}
+                        className={`relative p-3 rounded-xl border-2 text-center transition-all cursor-pointer overflow-hidden h-[52px] ${
+                          sortOrder === "desc"
+                            ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                            : "border-border/50 hover:border-primary/30 hover:bg-muted/30"
+                        }`}
+                      >
+                        {sortOrder === "desc" && (
+                          <div className="absolute top-0 right-0 w-0 h-0 border-l-[20px] border-l-transparent border-t-[20px] border-t-primary" />
+                        )}
+                        {sortOrder === "desc" && (
+                          <div className="absolute top-1 right-1 text-white text-[10px] font-bold z-10">
+                            ✓
+                          </div>
+                        )}
+                        <div className="font-semibold text-sm">Najnovšie</div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSortOrder("asc");
+                        }}
+                        className={`relative p-3 rounded-xl border-2 text-center transition-all cursor-pointer overflow-hidden h-[52px] ${
+                          sortOrder === "asc"
+                            ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                            : "border-border/50 hover:border-primary/30 hover:bg-muted/30"
+                        }`}
+                      >
+                        {sortOrder === "asc" && (
+                          <div className="absolute top-0 right-0 w-0 h-0 border-l-[20px] border-l-transparent border-t-[20px] border-t-primary" />
+                        )}
+                        {sortOrder === "asc" && (
+                          <div className="absolute top-1 right-1 text-white text-[10px] font-bold z-10">
+                            ✓
+                          </div>
+                        )}
+                        <div className="font-semibold text-sm">Najstaršie</div>
+                      </button>
+                    </div>
+                  </div>
                 </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-                <p className="text-[10px] text-slate-500">
-                  Režim „Všetky dátumy“ ignoruje čas a zobrazí celý prehľad.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <span className="block text-[11px] uppercase tracking-wide text-slate-400">
-                  Zoradenie
-                </span>
-                <div className="inline-flex rounded-full border border-slate-700 bg-slate-950/80 text-[11px]">
-                  <button
-                    type="button"
-                    onClick={() => setSortOrder("desc")}
-                    className={`px-3 py-1.5 rounded-full ${
-                      sortOrder === "desc"
-                        ? "bg-emerald-500 text-black"
-                        : "text-slate-300 hover:bg-slate-800"
-                    }`}
-                  >
-                    Najnovšie hore
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSortOrder("asc")}
-                    className={`px-3 py-1.5 rounded-full ${
-                      sortOrder === "asc"
-                        ? "bg-emerald-500 text-black"
-                        : "text-slate-300 hover:bg-slate-800"
-                    }`}
-                  >
-                    Najstaršie hore
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.section>
-
-          {filteredLogs.length === 0 ? (
-            <motion.p
-              className="text-xs text-slate-400"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: "easeOut", delay: 0.1 }}
-            >
-              Nenašli sa žiadne konverzácie pre zadané filtre. Skús upraviť
-              vyhľadávanie alebo filtre.
-            </motion.p>
-          ) : (
+          {/* Results */}
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* List */}
             <motion.div
-              className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)]"
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, ease: "easeOut", delay: 0.18 }}
+              className="lg:col-span-1"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
             >
-              {/* Zoznam konverzácií */}
-              <section className="space-y-3">
-                {filteredLogs.map((log) => (
-                  <motion.article
-                    key={log.id}
-                    onClick={() => setSelectedLog(log)}
-                    className={`border rounded-2xl p-4 cursor-pointer transition-colors bg-slate-900/60 hover:bg-slate-900 border-slate-800 ${
-                      selectedLog?.id === log.id
-                        ? "border-emerald-500/70 shadow-[0_0_0_1px_rgba(16,185,129,0.5)]"
-                        : ""
-                    }`}
-                    whileHover={{ translateY: -2 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <div className="flex items-center justify-between mb-2 gap-2">
-                      <span className="text-[11px] text-slate-500">
-                        {formatDate(log.created_at)}
-                      </span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/40">
-                        {inferCategory(log)}
-                      </span>
+              <Card className="border-border/50">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                    Konverzácie ({filteredLogs.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {filteredLogs.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>Žiadne konverzácie</p>
+                      <p className="text-xs mt-1">Skús zmeniť filtre</p>
                     </div>
-
-                    <p className="text-xs font-semibold text-slate-100 mb-1">
-                      🧑‍💻 Otázka:
-                    </p>
-                    <p className="text-sm text-slate-200 whitespace-pre-wrap line-clamp-2">
-                      {log.question}
-                    </p>
-
-                    <p className="text-[11px] text-slate-500 mt-2">
-                      Klikni pre detail celej konverzácie.
-                    </p>
-                  </motion.article>
-                ))}
-              </section>
-
-              {/* Detail konverzácie */}
-              <motion.aside
-                className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 h-fit lg:sticky lg:top-6 shadow-lg shadow-black/40"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, ease: "easeOut", delay: 0.2 }}
-              >
-                {selectedLog ? (
-                  <>
-                    <p className="text-[11px] font-semibold text-slate-300 mb-1">
-                      Detail konverzácie
-                    </p>
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <p className="text-[11px] text-slate-500">
-                        {formatDate(selectedLog.created_at)}
-                      </p>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/40">
-                        {inferCategory(selectedLog)}
-                      </span>
+                  ) : (
+                    <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2">
+                      {filteredLogs.map((log, index) => {
+                        const category = inferCategory(log);
+                        const categoryColor = categoryColors[category] || categoryColors["Iné"];
+                        return (
+                          <motion.div
+                            key={log.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.3, delay: index * 0.02 }}
+                          >
+                            <Card
+                              className={`cursor-pointer transition-all border-border/50 hover:border-primary/50 hover:shadow-md ${
+                                selectedLog?.id === log.id
+                                  ? "border-primary bg-primary/5 shadow-lg"
+                                  : "hover:bg-muted/50"
+                              }`}
+                              onClick={() => setSelectedLog(log)}
+                            >
+                              <CardContent className="p-4">
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <Badge variant="outline" className={`text-xs ${categoryColor}`}>
+                                      {category}
+                                    </Badge>
+                                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                      {formatDate(log.created_at)}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm font-medium line-clamp-2 leading-relaxed">
+                                    {log.question}
+                                  </p>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        );
+                      })}
                     </div>
-
-                    <p className="text-xs font-semibold text-slate-100 mb-1">
-                      🧑‍💻 Otázka:
-                    </p>
-                    <p className="text-sm text-slate-200 mb-3 whitespace-pre-wrap">
-                      {selectedLog.question}
-                    </p>
-
-                    <p className="text-xs font-semibold text-slate-100 mb-1">
-                      🤖 Odpoveď bota:
-                    </p>
-                    <p className="text-sm text-slate-300 whitespace-pre-wrap">
-                      {selectedLog.answer}
-                    </p>
-                  </>
-                ) : (
-                  <p className="text-xs text-slate-400">
-                    Vyber konverzáciu vľavo, aby si videl jej detail.
-                  </p>
-                )}
-              </motion.aside>
+                  )}
+                </CardContent>
+              </Card>
             </motion.div>
-          )}
+
+            {/* Detail */}
+            <motion.div
+              className="lg:col-span-2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              {selectedLog ? (
+                <motion.div
+                  key={selectedLog.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card className="border-border/50 bg-gradient-to-br from-card to-card/50">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="flex items-center gap-2 mb-2">
+                            <MessageSquare className="h-5 w-5 text-primary" />
+                            Detail konverzácie
+                          </CardTitle>
+                          <CardDescription>{formatDate(selectedLog.created_at)}</CardDescription>
+                        </div>
+                        <Badge variant="outline" className={categoryColors[inferCategory(selectedLog)] || categoryColors["Iné"]}>
+                          {inferCategory(selectedLog)}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label className="mb-2 flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-primary" />
+                          Otázka
+                        </Label>
+                        <Card className="bg-muted/30 border-border/50">
+                          <CardContent className="p-4">
+                            <p className="text-sm leading-relaxed">{selectedLog.question}</p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                      <div>
+                        <Label className="mb-2 flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-primary" />
+                          Odpoveď
+                        </Label>
+                        <Card className="bg-primary/5 border-primary/20">
+                          <CardContent className="p-4">
+                            <p className="text-sm leading-relaxed whitespace-pre-wrap">{selectedLog.answer}</p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ) : (
+                <Card className="border-border/50">
+                  <CardContent className="p-12 text-center">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
+                    <p className="text-muted-foreground">Vyber konverzáciu zoznamu</p>
+                  </CardContent>
+                </Card>
+              )}
+            </motion.div>
+          </div>
         </div>
-      </main>
+      </div>
     </AnimatedPage>
   );
 }

@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabaseClient";
 import { AnimatedPage } from "@/components/AnimatedPage";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Download, Users, Mail, MessageSquare, Calendar } from "lucide-react";
+import Link from "next/link";
 
 type Lead = {
   id: string;
@@ -25,7 +31,6 @@ export default function LeadsPage() {
       setError(null);
       setLoading(true);
 
-      // 1) Zisti prihláseného usera
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) {
         router.push("/login");
@@ -34,7 +39,6 @@ export default function LeadsPage() {
 
       const userId = userData.user.id;
 
-      // 2) Načítaj leady cez API (server používa service role, obíde RLS)
       try {
         const res = await fetch(
           `/api/dashboard/leads?ownerUserId=${encodeURIComponent(userId)}`
@@ -59,104 +63,184 @@ export default function LeadsPage() {
     loadLeads();
   }, [router]);
 
+  const handleExport = () => {
+    const headers = ["Dátum", "Meno", "Email", "Poznámka"];
+    const rows = leads.map((lead) => [
+      lead.created_at
+        ? new Date(lead.created_at).toLocaleString("sk-SK", {
+            dateStyle: "short",
+            timeStyle: "short",
+          })
+        : "",
+      lead.name || "",
+      lead.email,
+      `"${(lead.note || "").replace(/"/g, '""')}"`,
+    ]);
+    const csv = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `leady-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+  };
+
+  if (loading) {
+    return (
+      <AnimatedPage>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="text-center"
+          >
+            <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">Načítavam kontakty…</p>
+          </motion.div>
+        </div>
+      </AnimatedPage>
+    );
+  }
+
   return (
     <AnimatedPage>
-      <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 text-white">
-        <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-10 flex flex-col gap-6">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
           {/* Header */}
-          <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-b border-slate-800/80 pb-4">
+          <motion.header
+            className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <div>
-              <p className="text-xs text-emerald-300 mb-1">Kontakty z chatu</p>
-              <h1 className="text-xl md:text-2xl font-semibold tracking-tight">
+              <Badge variant="secondary" className="mb-2 gap-1.5">
+                <Users className="h-3 w-3" />
+                Kontakty z chatu
+              </Badge>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
                 Leady / Zanechané kontakty
               </h1>
-              <p className="text-xs text-slate-400 mt-1 max-w-xl">
-                Tu vidíš všetky kontakty, ktoré návštevníci zanechali cez formulár
-                v chate tvojho AI chatbota.
+              <p className="text-muted-foreground mt-2 max-w-2xl">
+                Tu vidíš všetky kontakty, ktoré návštevníci zanechali cez formulár v chate tvojho AI chatbota.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => router.push("/dashboard")}
-              className="self-start md:self-auto px-3 py-1.5 rounded-full border border-slate-700 text-xs text-slate-200 hover:border-slate-500 hover:bg-slate-900/60 transition-colors"
+            <div className="flex items-center gap-2 flex-wrap">
+              {leads.length > 0 && (
+                <Button variant="outline" onClick={handleExport} className="gap-2">
+                  <Download className="h-4 w-4" />
+                  Export CSV
+                </Button>
+              )}
+              <Button variant="outline" asChild>
+                <Link href="/dashboard" className="gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Späť
+                </Link>
+              </Button>
+            </div>
+          </motion.header>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-lg border border-destructive bg-destructive/10 text-destructive text-sm backdrop-blur-sm"
             >
-              ← Späť na dashboard
-            </button>
-          </header>
+              {error}
+            </motion.div>
+          )}
 
-          {/* Obsah */}
-          <section className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 md:p-5 shadow-lg shadow-black/40">
-            {loading ? (
-              <p className="text-sm text-slate-400">Načítavam kontakty…</p>
-            ) : error ? (
-              <p className="text-sm text-red-400">{error}</p>
-            ) : leads.length === 0 ? (
-              <div className="text-sm text-slate-400">
-                Zatiaľ nemáš žiadne leady.
-                <br />
-                Zapni si vo{" "}
-                <span className="text-emerald-400">
-                  &bdquo;Nastaveniach chatbota&ldquo; možnosť &bdquo;Zobrazovať formulár
-                  na zber kontaktov v chate&ldquo; a keď niekto odošle kontaktný formulár,
-                  uvidíš ho tu.
-                </span>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-xs text-slate-400">
-                  Počet kontaktov:{" "}
-                  <span className="text-emerald-300 font-medium">
-                    {leads.length}
-                  </span>
-                </p>
-
-                <div className="overflow-x-auto rounded-xl border border-slate-800/80 bg-slate-950/80">
-                  <table className="min-w-full text-xs md:text-sm border-collapse">
-                    <thead className="bg-slate-900/80 border-b border-slate-800">
-                      <tr className="text-left text-slate-400">
-                        <th className="px-3 py-2 font-medium">Meno</th>
-                        <th className="px-3 py-2 font-medium">Email</th>
-                        <th className="px-3 py-2 font-medium hidden md:table-cell">
-                          Poznámka
-                        </th>
-                        <th className="px-3 py-2 font-medium whitespace-nowrap">
-                          Dátum
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {leads.map((lead) => (
-                        <tr
-                          key={lead.id}
-                          className="border-t border-slate-800/70 hover:bg-slate-900/70 transition-colors"
-                        >
-                          <td className="px-3 py-2 align-top text-slate-100">
-                            {lead.name || "—"}
-                          </td>
-                          <td className="px-3 py-2 align-top text-emerald-300">
-                            {lead.email}
-                          </td>
-                          <td className="px-3 py-2 align-top text-slate-300 hidden md:table-cell">
-                            {lead.note || <span className="text-slate-500">—</span>}
-                          </td>
-                          <td className="px-3 py-2 align-top text-slate-400 whitespace-nowrap">
-                            {lead.created_at
-                              ? new Date(lead.created_at).toLocaleString("sk-SK", {
-                                  dateStyle: "short",
-                                  timeStyle: "short",
-                                })
-                              : "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="border-border/50 bg-gradient-to-br from-card to-card/50">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 mb-2">
+                      <Users className="h-5 w-5 text-primary" />
+                      Kontakty ({leads.length})
+                    </CardTitle>
+                    <CardDescription>
+                      {leads.length === 0
+                        ? "Zatiaľ nemáš žiadne leady. Zapni si vo Nastaveniach chatbota možnosť Zobrazovať formulár na zber kontaktov v chate."
+                        : "Všetky kontakty zanechané cez chat formulár."}
+                    </CardDescription>
+                  </div>
                 </div>
-              </div>
-            )}
-          </section>
+              </CardHeader>
+              <CardContent>
+                {leads.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Zatiaľ nemáš žiadne leady.</p>
+                    <p className="text-sm mt-2">
+                      Zapni si vo{" "}
+                      <Link href="/dashboard/bot-settings" className="text-primary hover:underline font-medium">
+                        Nastaveniach chatbota
+                      </Link>{" "}
+                      možnosť „Zobrazovať formulár na zber kontaktov v chate".
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {leads.map((lead, index) => (
+                      <motion.div
+                        key={lead.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                      >
+                        <Card className="border-border/50 hover:border-primary/50 transition-all hover:shadow-md h-full">
+                          <CardContent className="p-5">
+                            <div className="space-y-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1 space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                      <Mail className="h-4 w-4 text-primary" />
+                                    </div>
+                                    <div>
+                                      <p className="font-semibold text-sm">{lead.email}</p>
+                                      {lead.name && (
+                                        <p className="text-xs text-muted-foreground">{lead.name}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {lead.note && (
+                                    <div className="pt-2 border-t border-border/50">
+                                      <div className="flex items-start gap-2">
+                                        <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                        <p className="text-sm text-muted-foreground leading-relaxed">{lead.note}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                <Badge variant="outline" className="text-xs gap-1.5 whitespace-nowrap">
+                                  <Calendar className="h-3 w-3" />
+                                  {lead.created_at
+                                    ? new Date(lead.created_at).toLocaleString("sk-SK", {
+                                        dateStyle: "short",
+                                        timeStyle: "short",
+                                      })
+                                    : "—"}
+                                </Badge>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
-      </main>
+      </div>
     </AnimatedPage>
   );
 }
