@@ -480,10 +480,10 @@ export default function AdminPage() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.05 }}
                         >
-                          <Card className={`border-border/50 ${!user.is_active ? "opacity-60" : ""}`}>
-                            <CardContent className="p-6">
-                              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                                <div className="flex-1 space-y-2">
+                          <Card className={`border-border/50 overflow-hidden ${!user.is_active ? "opacity-60" : ""}`}>
+                            <CardContent className="p-4 sm:p-5">
+                              <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                                <div className="flex-1 space-y-3 min-w-0">
                                   <div className="flex items-center gap-3">
                                     <div>
                                       <p className="font-semibold text-lg">{user.email}</p>
@@ -536,7 +536,7 @@ export default function AdminPage() {
                                   </div>
                                 </div>
 
-                                <div className="flex flex-col gap-2 md:min-w-[200px]">
+                                <div className="flex flex-col gap-3 w-full md:w-[240px]">
                                   {(user.is_admin || user.id === SUPER_ADMIN_ID) ? (
                                     <div className="space-y-2">
                                       <Label className="text-xs">Plán</Label>
@@ -547,7 +547,7 @@ export default function AdminPage() {
                                   ) : (
                                     <div className="space-y-2">
                                       <Label className="text-xs">Plán</Label>
-                                      <div className="grid grid-cols-3 gap-2">
+                                      <div className="grid grid-cols-3 gap-2 w-full">
                                         {(["starter", "pro", "agency"] as const).map((plan) => (
                                           <button
                                             key={plan}
@@ -581,7 +581,7 @@ export default function AdminPage() {
                                     </div>
                                   )}
 
-                                  <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center justify-between gap-3 w-full">
                                     <div className="flex items-center gap-2">
                                       <Shield className="h-4 w-4 text-muted-foreground" />
                                       <span className="text-xs text-muted-foreground">Admin</span>
@@ -609,7 +609,7 @@ export default function AdminPage() {
                                     size="sm"
                                     onClick={() => handleToggleActive(user.id, user.is_active)}
                                     disabled={updating === user.id}
-                                    className="gap-2"
+                                    className="gap-2 w-full md:w-auto justify-center"
                                   >
                                     {updating === user.id ? (
                                       <>
