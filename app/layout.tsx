@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { GlobalChat } from "@/components/GlobalChat";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { NavigationLoading } from "@/components/NavigationLoading";
+import { NavigationLoadingWrapper } from "@/components/NavigationLoadingWrapper";
 
 export const metadata: Metadata = {
   title: "AI Social Agent – Firemný AI chatbot na tvoj web",
@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="sk" className="dark" suppressHydrationWarning>
       <body>
-        <NavigationLoading />
+        <NavigationLoadingWrapper />
         <div className="fixed top-16 sm:top-4 right-4 z-50 sm:block hidden">
           <ThemeToggle />
         </div>
