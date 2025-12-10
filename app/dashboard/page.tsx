@@ -49,6 +49,27 @@ export default function DashboardPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [plan, setPlan] = useState<string>("starter");
 
+  // Uchovanie scroll pozície pri odchode z dashboardu (návrat späť ťa nehodí na vrch)
+  useEffect(() => {
+    const saved = sessionStorage.getItem("dashboard-scroll");
+    if (saved) {
+      const y = parseInt(saved, 10);
+      if (!Number.isNaN(y)) {
+        requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "instant" as ScrollBehavior }));
+      }
+    }
+
+    const saveScroll = () => {
+      sessionStorage.setItem("dashboard-scroll", String(window.scrollY || 0));
+    };
+
+    window.addEventListener("beforeunload", saveScroll);
+    return () => {
+      saveScroll();
+      window.removeEventListener("beforeunload", saveScroll);
+    };
+  }, []);
+
   useEffect(() => {
     const loadUser = async () => {
       const { data, error } = await supabase.auth.getUser();
