@@ -2,8 +2,9 @@
 
 import { ChatWidget } from "@/components/ChatWidget";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function EmbedWidgetPage() {
+function EmbedWidgetContent() {
   const searchParams = useSearchParams();
   const botId = searchParams.get("botId");
 
@@ -19,6 +20,18 @@ export default function EmbedWidgetPage() {
     <div style={{ width: "100%", height: "100vh", background: "transparent" }}>
       <ChatWidget ownerUserId={botId} />
     </div>
+  );
+}
+
+export default function EmbedWidgetPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ width: "100%", height: "100vh", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "#fff" }}>Načítavam...</p>
+      </div>
+    }>
+      <EmbedWidgetContent />
+    </Suspense>
   );
 }
 
