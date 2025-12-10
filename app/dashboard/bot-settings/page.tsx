@@ -169,6 +169,14 @@ export default function BotSettingsPage() {
           setError("Nepodarilo sa uložiť nastavenia: " + updateError.message);
         } else {
           setSuccess("Nastavenia boli úspešne uložené.");
+          // Po úspešnom uložení refreshni stránku, aby sa prejavili zmeny (napr. pozícia bota)
+          setTimeout(() => {
+            if (typeof window !== "undefined") {
+              window.location.reload();
+            } else {
+              router.refresh();
+            }
+          }, 150);
         }
       } else {
         const { error: insertError } = await supabase
@@ -180,6 +188,13 @@ export default function BotSettingsPage() {
           setError("Nepodarilo sa uložiť nastavenia: " + insertError.message);
         } else {
           setSuccess("Nastavenia boli úspešne uložené.");
+          setTimeout(() => {
+            if (typeof window !== "undefined") {
+              window.location.reload();
+            } else {
+              router.refresh();
+            }
+          }, 150);
         }
       }
     } catch (err) {
