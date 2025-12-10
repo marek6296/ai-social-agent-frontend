@@ -433,7 +433,7 @@ export default function LeadsPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {filteredLeads.map((lead, index) => (
                       <motion.div
                         key={lead.id}
@@ -441,42 +441,73 @@ export default function LeadsPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
                       >
-                        <Card className="border-border/50 hover:border-primary/50 transition-all hover:shadow-md h-full flex flex-col">
-                          <CardContent className="p-6 flex flex-col flex-1">
-                            {/* Email a meno - symetrické */}
-                            <div className="flex items-start gap-3 mb-4">
-                              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                <Mail className="h-5 w-5 text-primary" />
+                        <Card className="border-border/50 hover:border-primary/50 transition-all hover:shadow-lg h-full flex flex-col group">
+                          <CardContent className="p-6 flex flex-col flex-1 gap-5">
+                            {/* Header s dátumom */}
+                            <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                              <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                  <Users className="h-5 w-5 text-primary" />
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-0.5">Kontakt</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {lead.created_at
+                                      ? new Date(lead.created_at).toLocaleDateString("sk-SK", {
+                                          day: "2-digit",
+                                          month: "2-digit",
+                                          year: "numeric",
+                                        })
+                                      : "—"}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-base mb-1 truncate">{lead.email}</p>
-                                {lead.name && (
-                                  <p className="text-sm text-muted-foreground truncate">{lead.name}</p>
-                                )}
+                              <Badge variant="outline" className="text-xs border-muted-foreground/30">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {lead.created_at
+                                  ? new Date(lead.created_at).toLocaleTimeString("sk-SK", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                  : "—"}
+                              </Badge>
+                            </div>
+
+                            {/* Meno */}
+                            {lead.name && (
+                              <div>
+                                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide font-semibold">Meno</p>
+                                <div className="bg-muted/30 rounded-lg p-3">
+                                  <p className="text-sm break-words leading-tight">{lead.name}</p>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Email */}
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide font-semibold">Email</p>
+                              <div className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
+                                <Mail className="h-5 w-5 text-primary flex-shrink-0" />
+                                <p className="font-semibold text-base break-words leading-tight">{lead.email}</p>
                               </div>
                             </div>
 
-                            {/* Dátum - symetrické */}
-                            <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border/50">
-                              <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                              <p className="text-xs text-muted-foreground">
-                                {lead.created_at
-                                  ? new Date(lead.created_at).toLocaleString("sk-SK", {
-                                      dateStyle: "long",
-                                      timeStyle: "short",
-                                    })
-                                  : "—"}
-                              </p>
-                            </div>
-                              
-                            {/* Poznámka - symetrické */}
+                            {/* Poznámka */}
                             {lead.note ? (
-                              <div className="flex items-start gap-3 flex-1">
-                                <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                                <p className="text-sm text-muted-foreground leading-relaxed flex-1 break-words">{lead.note}</p>
+                              <div className="mt-auto">
+                                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide font-semibold">Poznámka</p>
+                                <div className="flex items-start gap-3 bg-muted/30 rounded-lg p-3">
+                                  <MessageSquare className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                  <p className="text-sm text-muted-foreground leading-relaxed break-words flex-1">{lead.note}</p>
+                                </div>
                               </div>
                             ) : (
-                              <div className="flex-1" />
+                              <div className="mt-auto">
+                                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide font-semibold">Poznámka</p>
+                                <div className="bg-muted/30 rounded-lg p-3">
+                                  <p className="text-xs text-muted-foreground italic">Bez poznámky</p>
+                                </div>
+                              </div>
                             )}
                           </CardContent>
                         </Card>
