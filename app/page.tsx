@@ -31,7 +31,7 @@ export default function Home() {
 
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="container flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
           <motion.div
             className="flex items-center gap-2"
             initial={{ opacity: 0, x: -20 }}
@@ -41,28 +41,29 @@ export default function Home() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
               AI
             </div>
-            <span className="text-xl font-bold">AI Social Agent</span>
+            <span className="text-lg sm:text-xl font-bold">AI Social Agent</span>
           </motion.div>
 
           <motion.nav
-            className="flex items-center gap-4"
+            className="flex items-center gap-2 sm:gap-4"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Link href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block">
+            <Link href="#features" className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block">
               Funkcie
             </Link>
-            <Link href="#pricing" onClick={handleScrollToPricing} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block">
+            <Link href="#pricing" onClick={handleScrollToPricing} className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block">
               Cenník
             </Link>
-            <Button variant="ghost" asChild>
-              <Link href="/login">Prihlásiť sa</Link>
+            <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4" asChild>
+              <Link href="/login">Prihlásiť</Link>
             </Button>
-            <Button asChild>
+            <Button size="sm" className="text-xs sm:text-sm px-2 sm:px-4" asChild>
               <Link href="/signup">
-                Vytvoriť účet
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <span className="hidden sm:inline">Vytvoriť účet</span>
+                <span className="sm:hidden">Účet</span>
+                <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
               </Link>
             </Button>
           </motion.nav>
@@ -70,8 +71,8 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="container py-24 md:py-32">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-8 text-center">
+      <section className="container py-12 sm:py-16 md:py-24 lg:py-32 px-4 sm:px-6">
+        <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 sm:gap-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -82,32 +83,32 @@ export default function Home() {
               <Sparkles className="h-3 w-3" />
               AI chatbot pre firmy
             </Badge>
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight px-2">
               Premení tvoju webstránku
               <br />
               <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                 na nonstop AI asistenta
               </span>
             </h1>
-            <p className="max-w-2xl text-lg text-muted-foreground sm:text-xl">
+            <p className="max-w-2xl text-base sm:text-lg md:text-xl text-muted-foreground px-4">
               AI Social Agent je firemný AI chatbot, ktorý vie odpovedať na otázky
               zákazníkov, zbiera leady a pomáha s podporou – priamo na tvojom webe.
               Stačí vložiť krátky embed kód a chatbot beží 24/7.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <Button size="lg" asChild>
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+              <Button size="default" className="text-sm sm:text-base px-4 sm:px-6" asChild>
                 <Link href="/signup">
                   Vytvoriť chatbota
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild>
+              <Button size="default" variant="outline" className="text-sm sm:text-base px-4 sm:px-6" asChild>
                 <Link href="#pricing" onClick={handleScrollToPricing}>
                   Pozrieť cenník
                 </Link>
               </Button>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground mt-4">
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground mt-4 px-4">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-primary" />
                 Odpovede v reálnom čase, 24/7

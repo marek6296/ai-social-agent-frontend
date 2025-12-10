@@ -345,7 +345,7 @@ export default function DashboardPage() {
     <AnimatedPage>
       <OnboardingModal />
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 space-y-6 sm:space-y-8">
           {/* Header */}
           <motion.header
             className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-8 border-b"
