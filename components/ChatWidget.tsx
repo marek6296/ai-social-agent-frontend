@@ -647,7 +647,6 @@ export function ChatWidget({ ownerUserId }: { ownerUserId?: string }) {
             )}
           </div>
         </motion.div>
-      </motion.div>
 
       {/* Tlačidlo – nechávame stále, len animujeme viditeľnosť */}
       <motion.button
