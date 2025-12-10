@@ -57,15 +57,21 @@ export default function LeadsPage() {
 
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          console.error("Leads API error:", data);
-          setError("Nepodarilo sa načítať kontakty z chatu.");
+          console.error("Leads API error:", {
+            status: res.status,
+            statusText: res.statusText,
+            data,
+            userId,
+          });
+          setError(`Nepodarilo sa načítať kontakty z chatu. ${data.error || ""} ${data.details ? `(${data.details})` : ""}`);
         } else {
           const data = (await res.json()) as { leads?: Lead[] };
+          console.log("Leads loaded:", data.leads?.length || 0, "for userId:", userId);
           setLeads(data.leads ?? []);
         }
       } catch (err) {
         console.error("Chyba pri volaní /api/dashboard/leads:", err);
-        setError("Nastala chyba pri načítaní kontaktov.");
+        setError(`Nastala chyba pri načítaní kontaktov: ${err instanceof Error ? err.message : String(err)}`);
       }
 
       setLoading(false);

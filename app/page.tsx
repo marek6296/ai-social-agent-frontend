@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Sparkles, Zap, Shield, MessageSquare } from "lucide-react";
+import { ArrowRight, Sparkles, Zap, Shield, MessageSquare, CheckCircle2, TrendingUp, Clock, Globe } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Home() {
@@ -128,107 +128,81 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Preview Card */}
+          {/* Benefits Section */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="w-full max-w-2xl"
+            className="w-full max-w-4xl mt-8"
           >
             <Card className="border-2 shadow-xl bg-gradient-to-br from-card to-card/50 overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-bold text-sm shadow-lg">
-                      AI
-                    </div>
-                    <div>
-                      <p className="font-semibold text-base">AI asistent</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                        <p className="text-xs text-muted-foreground">Online teraz</p>
-                      </div>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="border-primary/30 text-primary">
-                    <Sparkles className="h-3 w-3 mr-1" />
-                    Live demo
-                  </Badge>
-                </div>
+              <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b text-center">
+                <CardTitle className="text-2xl mb-2">Prečo si vybrať AI Social Agent?</CardTitle>
+                <CardDescription className="text-base">
+                  Všetko, čo potrebuješ pre úspešný AI chatbot na jednom mieste
+                </CardDescription>
               </CardHeader>
-              <CardContent className="p-4 bg-gradient-to-b from-background to-muted/20">
-                <div className="space-y-3 max-h-[300px] overflow-y-auto">
-                  {/* User message */}
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="flex justify-end"
-                  >
-                    <div className="rounded-2xl rounded-br-sm bg-primary text-primary-foreground p-3 text-sm max-w-[80%] shadow-md">
-                      <p>Ahoj, zaujíma ma, ako funguje váš AI chatbot a koľko to stojí?</p>
-                    </div>
-                  </motion.div>
-
-                  {/* Bot response 1 */}
-                  <motion.div
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 }}
-                    className="flex justify-start"
-                  >
-                    <div className="rounded-2xl rounded-bl-sm bg-muted border p-3 text-sm max-w-[85%] shadow-sm">
-                      <p className="font-medium mb-1">Ahoj! 👋</p>
-                      <p>
-                        AI Social Agent je firemný AI chatbot, ktorý odpovedá na otázky zákazníkov 24/7. 
-                        Môžeš ho nastaviť podľa svojich FAQ a firemných informácií.
-                      </p>
-                    </div>
-                  </motion.div>
-
-                  {/* User message 2 */}
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.8 }}
-                    className="flex justify-end"
-                  >
-                    <div className="rounded-2xl rounded-br-sm bg-primary text-primary-foreground p-3 text-sm max-w-[80%] shadow-md">
-                      <p>Aké máte plány a ceny?</p>
-                    </div>
-                  </motion.div>
-
-                  {/* Bot response 2 */}
-                  <motion.div
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 1.0 }}
-                    className="flex justify-start"
-                  >
-                    <div className="rounded-2xl rounded-bl-sm bg-muted border p-3 text-sm max-w-[85%] shadow-sm">
-                      <p>
-                        Máme 3 plány: <strong>Starter Free</strong> (zadarmo, 1000 konverzácií/mesiac), 
-                        <strong> Pro</strong> (19.99€/mesiac, 10 000 konverzácií) a <strong>Agency</strong> 
-                        (100€/mesiac, neobmedzene). Môžeš začať zadarmo a upgrade-núť kedykoľvek! 🚀
-                      </p>
-                    </div>
-                  </motion.div>
-
-                  {/* Typing indicator */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 1, 0] }}
-                    transition={{ delay: 1.2, repeat: Infinity, duration: 1.5 }}
-                    className="flex justify-start"
-                  >
-                    <div className="rounded-2xl rounded-bl-sm bg-muted border p-3">
-                      <div className="flex gap-1">
-                        <div className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "0s" }}></div>
-                        <div className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                        <div className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+              <CardContent className="p-6 sm:p-8">
+                <div className="grid md:grid-cols-2 gap-6">
+                  {[
+                    {
+                      icon: Clock,
+                      title: "24/7 dostupnosť",
+                      description: "Tvoj chatbot odpovedá zákazníkom nepretržite, aj keď si offline.",
+                    },
+                    {
+                      icon: TrendingUp,
+                      title: "Zvyšuje konverzie",
+                      description: "Zbieraj leady automaticky a zvyšuj počet objednávok.",
+                    },
+                    {
+                      icon: Zap,
+                      title: "Okamžité odpovede",
+                      description: "Zákazníci dostanú odpoveď za sekundy, nie hodiny alebo dni.",
+                    },
+                    {
+                      icon: Globe,
+                      title: "Jednoduchá integrácia",
+                      description: "Jeden riadok kódu a chatbot je na tvojom webe za minúty.",
+                    },
+                    {
+                      icon: Shield,
+                      title: "Bezpečnosť dát",
+                      description: "Tvoje dáta sú šifrované a chránené podľa najvyšších štandardov.",
+                    },
+                    {
+                      icon: CheckCircle2,
+                      title: "Bez záväzkov",
+                      description: "Začni zadarmo a zruš kedykoľvek. Žiadne skryté poplatky.",
+                    },
+                  ].map((benefit, index) => (
+                    <motion.div
+                      key={benefit.title}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + index * 0.1 }}
+                      className="flex items-start gap-4"
+                    >
+                      <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <benefit.icon className="h-6 w-6 text-primary" />
                       </div>
-                    </div>
-                  </motion.div>
+                      <div>
+                        <h3 className="font-semibold text-base mb-1">{benefit.title}</h3>
+                        <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="mt-8 pt-6 border-t text-center">
+                  <Button size="lg" className="text-base px-8" asChild>
+                    <Link href="/signup">
+                      Začať zadarmo
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Bez kreditnej karty • Aktivácia za 2 minúty • Podpora 24/7
+                  </p>
                 </div>
               </CardContent>
             </Card>

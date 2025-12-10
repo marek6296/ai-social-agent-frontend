@@ -359,13 +359,35 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 space-y-6 sm:space-y-8">
           {/* Header */}
           <motion.header
-            className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-8 border-b"
+            className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-8 border-b"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
+            {/* Mobile: Plan badge and logout button in top right */}
             <motion.div
-              className="flex items-center gap-4"
+              className="absolute top-0 right-0 flex items-center gap-2 md:hidden z-10"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Badge 
+                key={`plan-${plan}`}
+                variant="outline" 
+                className="flex gap-1.5 px-2 py-1 text-xs capitalize"
+              >
+                <Zap className="h-3 w-3" />
+                <span className="font-medium">
+                  {plan === "unlimited" ? "Unlimited" : plan || "starter"}
+                </span>
+              </Badge>
+              <Button variant="outline" onClick={handleLogout} size="sm" className="h-8 px-2">
+                <LogOut className="h-3.5 w-3.5" />
+              </Button>
+            </motion.div>
+
+            <motion.div
+              className="flex items-center gap-4 pr-20 md:pr-0"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -400,8 +422,10 @@ export default function DashboardPage() {
                 </p>
               </div>
             </motion.div>
+            
+            {/* Desktop: Plan badge and logout button */}
             <motion.div
-              className="flex items-center gap-3 justify-end md:justify-start"
+              className="hidden md:flex items-center gap-3 justify-end"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -418,8 +442,7 @@ export default function DashboardPage() {
               </Badge>
               <Button variant="outline" onClick={handleLogout} size="sm">
                 <LogOut className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Odhlásiť sa</span>
-                <span className="sm:hidden">Odhlásiť</span>
+                Odhlásiť sa
               </Button>
             </motion.div>
           </motion.header>
