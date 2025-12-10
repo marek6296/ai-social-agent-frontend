@@ -745,7 +745,7 @@ export default function AnalyticsPage() {
                               cx="50%"
                               cy="50%"
                               labelLine={false}
-                              label={({ label, percentage }) => `${label}: ${percentage}%`}
+                              label={(entry: any) => `${entry.name}: ${entry.percent ? (entry.percent * 100).toFixed(1) : 0}%`}
                               outerRadius={100}
                               fill="#8884d8"
                               dataKey="count"

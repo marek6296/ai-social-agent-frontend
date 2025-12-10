@@ -417,13 +417,14 @@ export function ChatWidget({ ownerUserId }: { ownerUserId?: string }) {
               className="h-8 w-8 rounded-full object-cover"
               onError={(e) => {
                 // Fallback na emoji ak obrázok nefunguje
-                (e.target as HTMLImageElement).style.display = "none";
-                const parent = (e.target as HTMLElement).parentElement;
+                const target = e.target as HTMLImageElement;
+                target.style.display = "none";
+                const parent = target.parentElement;
                 if (parent && !parent.querySelector(".fallback-emoji")) {
                   const emoji = document.createElement("span");
                   emoji.className = "fallback-emoji inline-flex h-8 w-8 rounded-full bg-black/20 items-center justify-center text-lg";
                   emoji.textContent = "💬";
-                  parent.insertBefore(emoji, e.target);
+                  parent.insertBefore(emoji, target);
                 }
               }}
             />
@@ -473,8 +474,9 @@ export function ChatWidget({ ownerUserId }: { ownerUserId?: string }) {
                     className="h-8 w-8 rounded-full object-cover border border-slate-700"
                     onError={(e) => {
                       // Fallback na default AI ikonu
-                      (e.target as HTMLImageElement).style.display = "none";
-                      const parent = (e.target as HTMLElement).parentElement;
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = "none";
+                      const parent = target.parentElement;
                       if (parent && !parent.querySelector(".fallback-ai")) {
                         const aiDiv = document.createElement("div");
                         aiDiv.className = "fallback-ai h-8 w-8 rounded-full border border-slate-700 flex items-center justify-center text-xs font-semibold";
@@ -482,7 +484,7 @@ export function ChatWidget({ ownerUserId }: { ownerUserId?: string }) {
                         aiDiv.style.borderColor = `${widgetPrimaryColor || "#10b981"}40`;
                         aiDiv.style.color = widgetPrimaryColor || "#10b981";
                         aiDiv.textContent = "AI";
-                        parent.insertBefore(aiDiv, e.target);
+                        parent.insertBefore(aiDiv, target);
                       }
                     }}
                   />

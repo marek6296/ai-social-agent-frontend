@@ -368,10 +368,10 @@ export default function DashboardPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <Badge variant="secondary" className="gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                  <div className="flex items-center justify-center gap-1.5 rounded-full border border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 px-3 py-1.5 text-xs font-semibold transition-colors min-w-fit">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse flex-shrink-0" />
                     Vitaj späť
-                  </Badge>
+                  </div>
                   {user?.id === SUPER_ADMIN_ID && (
                     <Badge variant="outline" className="gap-1.5 border-purple-500/50 text-purple-500">
                       <Shield className="h-3 w-3" />

@@ -110,14 +110,15 @@ export default function MyBotPage() {
           </motion.header>
 
           {/* Tips */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-6 items-stretch">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
+              className="flex"
             >
-              <Card className="border-border/50 bg-gradient-to-br from-card to-card/50 h-full">
-                <CardHeader>
+              <Card className="border-border/50 bg-gradient-to-br from-card to-card/50 h-full w-full flex flex-col">
+                <CardHeader className="flex-shrink-0">
                   <CardTitle className="flex items-center gap-2">
                     <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                       <Sparkles className="h-5 w-5 text-primary" />
@@ -125,8 +126,8 @@ export default function MyBotPage() {
                     Ako testovať tvojho bota
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <ul className="space-y-3 text-sm">
+                <CardContent className="space-y-3 flex-1 flex flex-col">
+                  <ul className="space-y-3 text-sm flex-1">
                     {[
                       "Spýtaj sa na cenu, balíky alebo spoluprácu.",
                       "Over, či vie popísať tvoju firmu podľa nastavení bota.",
@@ -146,7 +147,7 @@ export default function MyBotPage() {
                       </motion.li>
                     ))}
                   </ul>
-                  <p className="text-xs text-muted-foreground pt-2 border-t border-border/50">
+                  <p className="text-xs text-muted-foreground pt-2 border-t border-border/50 mt-auto">
                     Vpravo dole vidíš bublinku tvojho firemného bota – presne takto sa bude správať na tvojej webovej stránke.
                   </p>
                 </CardContent>
@@ -157,9 +158,10 @@ export default function MyBotPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
+              className="flex"
             >
-              <Card className="border-border/50 bg-gradient-to-br from-card to-card/50 h-full">
-                <CardHeader>
+              <Card className="border-border/50 bg-gradient-to-br from-card to-card/50 h-full w-full flex flex-col">
+                <CardHeader className="flex-shrink-0">
                   <CardTitle className="flex items-center gap-2">
                     <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
                       <Lightbulb className="h-5 w-5 text-amber-500" />
@@ -167,8 +169,8 @@ export default function MyBotPage() {
                     Tipy pre lepšie odpovede
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <ul className="space-y-3 text-sm">
+                <CardContent className="space-y-3 flex-1 flex flex-col">
+                  <ul className="space-y-3 text-sm flex-1">
                     {[
                       { num: "1", text: "Dopln si podrobný popis firmy v nastaveniach bota – AI bude vedieť, čo presne ponúkaš." },
                       { num: "2", text: "Pridaj najčastejšie otázky do sekcie FAQ & firemné odpovede." },
@@ -190,7 +192,7 @@ export default function MyBotPage() {
                       </motion.li>
                     ))}
                   </ul>
-                  <p className="text-xs text-muted-foreground pt-2 border-t border-border/50">
+                  <p className="text-xs text-muted-foreground pt-2 border-t border-border/50 mt-auto">
                     Všetky zmeny v nastaveniach bota a FAQ sa okamžite prejavia aj v tomto teste.
                   </p>
                 </CardContent>
