@@ -164,7 +164,7 @@ export default function FaqPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
           {/* Header */}
           <motion.header
-            className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b"
+            className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -181,14 +181,8 @@ export default function FaqPage() {
                 Tu si vieš pridať často kladené otázky a odpovede, ktoré bude AI používať pri odpovedaní návštevníkom.
               </p>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {items.length > 0 && (
-                <Button variant="outline" onClick={handleExport} className="gap-2">
-                  <Download className="h-4 w-4" />
-                  Export CSV
-                </Button>
-              )}
-              <Button variant="outline" asChild>
+            <div className="flex items-center gap-3 flex-wrap">
+              <Button variant="outline" size="default" asChild className="gap-2 px-4 py-2 font-semibold">
                 <Link href="/dashboard" className="gap-2">
                   <ArrowLeft className="h-4 w-4" />
                   Späť
@@ -196,6 +190,23 @@ export default function FaqPage() {
               </Button>
             </div>
           </motion.header>
+
+          {/* Actions */}
+          {items.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="pb-2"
+            >
+              <div className="flex flex-wrap items-center gap-3 justify-start">
+                <Button variant="outline" size="default" onClick={handleExport} className="gap-2 px-4 py-2 font-semibold">
+                  <Download className="h-4 w-4" />
+                  Export CSV
+                </Button>
+              </div>
+            </motion.div>
+          )}
 
           {error && (
             <motion.div
