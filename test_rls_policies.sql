@@ -51,3 +51,4 @@ WHERE tablename = 'users_profile';
 --    - "Admin can update all profiles" (ak existuje)
 -- 4. rowsecurity by malo byť 'true'
 
+

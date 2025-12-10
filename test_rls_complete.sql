@@ -71,3 +71,4 @@ ORDER BY created_at DESC;
 -- 3. Ak si admin:
 --    - Všetky dotazy by mali vrátiť dáta
 
+

@@ -314,7 +314,8 @@ export default function BotSettingsPage() {
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    rows={4}
+                    rows={16}
+                    className="min-h-[400px] resize-y"
                     placeholder='Napr. "Si AI chatbot s názvom Jano pre firmu Detox."'
                   />
                   <p className="text-xs text-muted-foreground">

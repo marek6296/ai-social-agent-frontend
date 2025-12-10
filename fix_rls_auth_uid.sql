@@ -98,3 +98,4 @@ CREATE POLICY "Admin can update all profiles"
 -- POZNÁMKA: V SQL Editori môže auth.uid() vracať NULL.
 -- V aplikácii by to malo fungovať správne, pretože používateľ je prihlásený.
 
+

@@ -110,3 +110,4 @@ FROM users_profile
 WHERE id = auth.uid();
 ```
 
+

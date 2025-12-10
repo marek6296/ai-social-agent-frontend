@@ -36,3 +36,4 @@ AND column_name IN ('widget_primary_color', 'widget_background_color', 'widget_w
 - Default hodnoty sa nastavujú v aplikácii, nie v databáze
 - Po pridaní týchto stĺpcov by sa pokročilé nastavenia mali ukladať bez problémov
 
+

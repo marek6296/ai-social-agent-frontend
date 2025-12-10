@@ -51,3 +51,4 @@ CREATE POLICY "Admin can update all profiles"
 -- FROM users_profile
 -- WHERE id = auth.uid();
 
+

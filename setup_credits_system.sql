@@ -32,3 +32,4 @@ ORDER BY created_at DESC;
 -- - Reset sa deje automaticky v /api/chat/route.ts pri kontrole limitov
 -- - Admin/Super Admin účty majú unlimited kredity
 
+
