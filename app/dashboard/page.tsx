@@ -238,6 +238,8 @@ export default function DashboardPage() {
   };
 
   const fullName = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim();
+  // Zobrazíme len prvé meno, alebo celé meno ak nie je prvé, alebo email ak nie je nič
+  const displayName = user?.firstName || fullName || user?.email?.split("@")[0] || "Používateľ";
 
   if (loading) {
     return (
@@ -249,7 +251,7 @@ export default function DashboardPage() {
             transition={{ duration: 0.3 }}
             className="text-center"
           >
-            <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="h-8 w-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" style={{ animation: 'spin 1s linear infinite' }} />
             <p className="text-sm text-muted-foreground">Načítavam tvoj dashboard…</p>
           </motion.div>
         </div>
@@ -382,7 +384,7 @@ export default function DashboardPage() {
                   )}
                 </div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                  Ahoj, {fullName || user?.email}
+                  Ahoj {displayName}
                 </h1>
                 <p className="text-muted-foreground mt-2">
                   Tu spravuješ svoj firemný AI chatbot – nastavenia, FAQ, históriu konverzácií a analýzy.

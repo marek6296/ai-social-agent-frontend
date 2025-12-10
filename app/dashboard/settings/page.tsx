@@ -190,7 +190,7 @@ export default function SettingsPage() {
             transition={{ duration: 0.3 }}
             className="text-center"
           >
-            <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="h-8 w-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" style={{ animation: 'spin 1s linear infinite' }} />
             <p className="text-sm text-muted-foreground">Načítavam nastavenia…</p>
           </motion.div>
         </div>
@@ -309,7 +309,7 @@ export default function SettingsPage() {
                   <Button type="submit" disabled={saving} className="gap-2">
                     {saving ? (
                       <>
-                        <div className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                        <div className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
                         Ukladám…
                       </>
                     ) : (
@@ -380,7 +380,7 @@ export default function SettingsPage() {
                   <Button type="submit" disabled={saving} className="gap-2">
                     {saving ? (
                       <>
-                        <div className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                        <div className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
                         Mením heslo…
                       </>
                     ) : (
@@ -447,7 +447,7 @@ export default function SettingsPage() {
                   <Button onClick={generateApiKey} disabled={apiKeyLoading} className="gap-2">
                     {apiKeyLoading ? (
                       <>
-                        <div className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                        <div className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
                         Generujem…
                       </>
                     ) : (
