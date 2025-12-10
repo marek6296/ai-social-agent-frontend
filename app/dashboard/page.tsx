@@ -390,7 +390,7 @@ export default function DashboardPage() {
               </div>
             </motion.div>
             <motion.div
-              className="flex items-center gap-3"
+              className="flex items-center gap-3 justify-end md:justify-start"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -407,7 +407,8 @@ export default function DashboardPage() {
               </Badge>
               <Button variant="outline" onClick={handleLogout} size="sm">
                 <LogOut className="h-4 w-4 mr-2" />
-                Odhlásiť sa
+                <span className="hidden sm:inline">Odhlásiť sa</span>
+                <span className="sm:hidden">Odhlásiť</span>
               </Button>
             </motion.div>
           </motion.header>
