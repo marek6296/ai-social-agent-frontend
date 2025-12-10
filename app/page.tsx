@@ -57,19 +57,19 @@ export default function Home() {
             <Link href="#pricing" onClick={handleScrollToPricing} className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block">
               Cenník
             </Link>
-            <div className="hidden sm:block">
+            <div className="flex items-center gap-1.5 sm:gap-4">
               <ThemeToggle />
+              <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4" asChild>
+                <Link href="/login">Prihlásiť</Link>
+              </Button>
+              <Button size="sm" className="text-xs sm:text-sm px-2 sm:px-4" asChild>
+                <Link href="/signup">
+                  <span className="hidden sm:inline">Vytvoriť účet</span>
+                  <span className="sm:hidden">Účet</span>
+                  <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
+                </Link>
+              </Button>
             </div>
-            <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4" asChild>
-              <Link href="/login">Prihlásiť</Link>
-            </Button>
-            <Button size="sm" className="text-xs sm:text-sm px-2 sm:px-4" asChild>
-              <Link href="/signup">
-                <span className="hidden sm:inline">Vytvoriť účet</span>
-                <span className="sm:hidden">Účet</span>
-                <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
-              </Link>
-            </Button>
           </motion.nav>
         </div>
       </header>
@@ -135,32 +135,100 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="w-full max-w-2xl"
           >
-            <Card className="border-2">
-              <CardHeader>
+            <Card className="border-2 shadow-xl bg-gradient-to-br from-card to-card/50 overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-bold text-sm shadow-lg">
                       AI
                     </div>
                     <div>
-                      <p className="font-semibold">AI asistent</p>
-                      <p className="text-xs text-muted-foreground">Nonstop online</p>
+                      <p className="font-semibold text-base">AI asistent</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <p className="text-xs text-muted-foreground">Online teraz</p>
+                      </div>
                     </div>
                   </div>
-                  <Badge variant="outline">Live náhľad</Badge>
+                  <Badge variant="outline" className="border-primary/30 text-primary">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    Live demo
+                  </Badge>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="rounded-lg border bg-muted/50 p-3 text-sm">
-                    <p>Dobrý deň, zaujíma ma, ako funguje váš produkt.</p>
-                  </div>
-                  <div className="rounded-lg border bg-primary/10 p-3 text-sm ml-auto max-w-[85%]">
-                    <p>
-                      Ahoj! Som AI chatbot tvojej firmy. Viem ti vysvetliť, čo robíme,
-                      odporučiť vhodný plán a prepojiť ťa na podporu, ak bude treba.
-                    </p>
-                  </div>
+              <CardContent className="p-4 bg-gradient-to-b from-background to-muted/20">
+                <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                  {/* User message */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="flex justify-end"
+                  >
+                    <div className="rounded-2xl rounded-br-sm bg-primary text-primary-foreground p-3 text-sm max-w-[80%] shadow-md">
+                      <p>Ahoj, zaujíma ma, ako funguje váš AI chatbot a koľko to stojí?</p>
+                    </div>
+                  </motion.div>
+
+                  {/* Bot response 1 */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="flex justify-start"
+                  >
+                    <div className="rounded-2xl rounded-bl-sm bg-muted border p-3 text-sm max-w-[85%] shadow-sm">
+                      <p className="font-medium mb-1">Ahoj! 👋</p>
+                      <p>
+                        AI Social Agent je firemný AI chatbot, ktorý odpovedá na otázky zákazníkov 24/7. 
+                        Môžeš ho nastaviť podľa svojich FAQ a firemných informácií.
+                      </p>
+                    </div>
+                  </motion.div>
+
+                  {/* User message 2 */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.8 }}
+                    className="flex justify-end"
+                  >
+                    <div className="rounded-2xl rounded-br-sm bg-primary text-primary-foreground p-3 text-sm max-w-[80%] shadow-md">
+                      <p>Aké máte plány a ceny?</p>
+                    </div>
+                  </motion.div>
+
+                  {/* Bot response 2 */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.0 }}
+                    className="flex justify-start"
+                  >
+                    <div className="rounded-2xl rounded-bl-sm bg-muted border p-3 text-sm max-w-[85%] shadow-sm">
+                      <p>
+                        Máme 3 plány: <strong>Starter Free</strong> (zadarmo, 1000 konverzácií/mesiac), 
+                        <strong> Pro</strong> (19.99€/mesiac, 10 000 konverzácií) a <strong>Agency</strong> 
+                        (100€/mesiac, neobmedzene). Môžeš začať zadarmo a upgrade-núť kedykoľvek! 🚀
+                      </p>
+                    </div>
+                  </motion.div>
+
+                  {/* Typing indicator */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0, 1, 0] }}
+                    transition={{ delay: 1.2, repeat: Infinity, duration: 1.5 }}
+                    className="flex justify-start"
+                  >
+                    <div className="rounded-2xl rounded-bl-sm bg-muted border p-3">
+                      <div className="flex gap-1">
+                        <div className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "0s" }}></div>
+                        <div className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                        <div className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+                      </div>
+                    </div>
+                  </motion.div>
                 </div>
               </CardContent>
             </Card>

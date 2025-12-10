@@ -41,15 +41,15 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="relative h-8 w-14 rounded-full bg-slate-700 border border-slate-600 transition-colors hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+      className="relative h-7 w-12 sm:h-8 sm:w-14 rounded-full bg-slate-700 border border-slate-600 transition-colors hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 flex-shrink-0"
       aria-label={`Prepnúť na ${theme === "dark" ? "svetlú" : "tmavú"} tému`}
     >
       <span
-        className={`absolute top-1 left-1 h-6 w-6 rounded-full bg-white shadow-md transform transition-transform ${
-          theme === "dark" ? "translate-x-0" : "translate-x-6"
+        className={`absolute top-0.5 left-0.5 sm:top-1 sm:left-1 h-6 w-6 sm:h-6 sm:w-6 rounded-full bg-white shadow-md transform transition-transform ${
+          theme === "dark" ? "translate-x-0" : "translate-x-5 sm:translate-x-6"
         }`}
       >
-        <span className="absolute inset-0 flex items-center justify-center text-xs">
+        <span className="absolute inset-0 flex items-center justify-center text-[10px] sm:text-xs">
           {theme === "dark" ? "🌙" : "☀️"}
         </span>
       </span>
