@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Sparkles, Zap, Shield, MessageSquare } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Home() {
   useEffect(() => {
@@ -56,6 +57,9 @@ export default function Home() {
             <Link href="#pricing" onClick={handleScrollToPricing} className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block">
               Cenník
             </Link>
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
             <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4" asChild>
               <Link href="/login">Prihlásiť</Link>
             </Button>

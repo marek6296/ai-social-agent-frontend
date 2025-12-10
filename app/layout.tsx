@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="sk" className="dark" suppressHydrationWarning>
       <body>
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-16 sm:top-4 right-4 z-50 sm:block hidden">
           <ThemeToggle />
         </div>
         {children}

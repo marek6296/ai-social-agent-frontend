@@ -367,8 +367,7 @@ export default function DashboardPage() {
                 )}
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text flex items-center gap-3 flex-wrap">
-                  <span>Ahoj, {fullName || user?.email}</span>
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                   {user?.id === SUPER_ADMIN_ID && (
                     <Badge variant="outline" className="gap-1.5 border-purple-500/50 text-purple-500 text-xs">
                       <Shield className="h-3 w-3" />
@@ -381,6 +380,9 @@ export default function DashboardPage() {
                       Admin
                     </Badge>
                   )}
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                  Ahoj, {fullName || user?.email}
                 </h1>
                 <p className="text-muted-foreground mt-2">
                   Tu spravuješ svoj firemný AI chatbot – nastavenia, FAQ, históriu konverzácií a analýzy.
