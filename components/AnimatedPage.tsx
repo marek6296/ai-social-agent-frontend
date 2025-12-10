@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { motion } from "framer-motion";
 
 type AnimatedPageProps = {
@@ -8,6 +8,11 @@ type AnimatedPageProps = {
 };
 
 export function AnimatedPage({ children }: AnimatedPageProps) {
+  // Scroll na začiatok stránky pri otvorení alebo refreshnutí
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}

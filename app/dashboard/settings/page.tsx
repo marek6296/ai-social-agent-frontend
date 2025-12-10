@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabaseClient";
 import { AnimatedPage } from "@/components/AnimatedPage";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Save, Key, User, Lock, Copy, Check } from "lucide-react";
+import { ArrowLeft, Save, Key, User, Lock, Copy, Check, CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
 
 type UserProfile = {
@@ -88,6 +88,7 @@ export default function SettingsPage() {
 
       if (updateError) {
         setError("Nepodarilo sa aktualizovať profil: " + updateError.message);
+        setTimeout(() => setError(null), 5000);
       } else {
         setSuccess("Profil bol úspešne aktualizovaný.");
         setUser({
@@ -95,6 +96,7 @@ export default function SettingsPage() {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
         });
+        setTimeout(() => setSuccess(null), 5000);
       }
     } catch (err) {
       console.error("Profile update error:", err);
@@ -110,11 +112,13 @@ export default function SettingsPage() {
 
     if (newPassword.length < 8) {
       setError("Nové heslo musí mať aspoň 8 znakov.");
+      setTimeout(() => setError(null), 5000);
       return;
     }
 
     if (newPassword !== confirmPassword) {
       setError("Nové heslá sa nezhodujú.");
+      setTimeout(() => setError(null), 5000);
       return;
     }
 
@@ -130,6 +134,7 @@ export default function SettingsPage() {
 
       if (signInError) {
         setError("Aktuálne heslo je nesprávne.");
+        setTimeout(() => setError(null), 5000);
         setSaving(false);
         return;
       }
@@ -140,11 +145,13 @@ export default function SettingsPage() {
 
       if (updateError) {
         setError("Nepodarilo sa zmeniť heslo: " + updateError.message);
+        setTimeout(() => setError(null), 5000);
       } else {
         setSuccess("Heslo bolo úspešne zmenené.");
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
+        setTimeout(() => setSuccess(null), 5000);
       }
     } catch (err) {
       console.error("Password change error:", err);
@@ -233,25 +240,35 @@ export default function SettingsPage() {
             </Button>
           </motion.header>
 
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-4 rounded-lg border border-destructive bg-destructive/10 text-destructive text-sm backdrop-blur-sm"
-            >
-              {error}
-            </motion.div>
-          )}
+          <AnimatePresence mode="wait">
+            {error && (
+              <motion.div
+                key="error"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="p-4 rounded-lg border border-destructive/50 bg-destructive/10 text-destructive text-sm backdrop-blur-sm flex items-center gap-3 shadow-lg"
+              >
+                <XCircle className="h-5 w-5 flex-shrink-0" />
+                <span>{error}</span>
+              </motion.div>
+            )}
 
-          {success && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-4 rounded-lg border border-primary bg-primary/10 text-primary text-sm backdrop-blur-sm"
-            >
-              {success}
-            </motion.div>
-          )}
+            {success && (
+              <motion.div
+                key="success"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="p-4 rounded-lg border border-primary/50 bg-primary/10 text-primary text-sm backdrop-blur-sm flex items-center gap-3 shadow-lg"
+              >
+                <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
+                <span>{success}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Profile */}
           <motion.div

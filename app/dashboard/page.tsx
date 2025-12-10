@@ -237,9 +237,18 @@ export default function DashboardPage() {
     router.push("/");
   };
 
-  const fullName = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim();
-  // Zobrazíme len prvé meno, alebo celé meno ak nie je prvé, alebo email ak nie je nič
-  const displayName = user?.firstName || fullName || user?.email?.split("@")[0] || "Používateľ";
+  // Zobrazíme len prvé meno (bez priezviska)
+  // Ak nie je firstName, skúsime získať prvé meno z emailu alebo použijeme fallback
+  const getFirstNameFromEmail = (email: string | null | undefined) => {
+    if (!email) return null;
+    const emailPart = email.split("@")[0];
+    const firstPart = emailPart.split(".")[0];
+    return firstPart.charAt(0).toUpperCase() + firstPart.slice(1);
+  };
+  
+  const displayName = user?.firstName?.trim() || 
+                      getFirstNameFromEmail(user?.email) || 
+                      "Používateľ";
 
   if (loading) {
     return (
