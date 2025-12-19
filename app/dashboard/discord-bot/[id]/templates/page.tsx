@@ -148,10 +148,11 @@ export default function TemplatesPage() {
             user_id: vote.user_id,
             option_index: optionIndex,
             option: poll!.options[optionIndex],
+            data_json: vote.data_json, // Include data_json to get user_tag
           };
         }
         return null;
-      }).filter(Boolean) as Array<{ user_id: string; option_index: number; option: string }>;
+      }).filter(Boolean) as Array<{ user_id: string; option_index: number; option: string; data_json?: any }>;
 
       setPollResults(prev => ({
         ...prev,
