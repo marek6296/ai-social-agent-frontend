@@ -1106,20 +1106,22 @@ npm run dev`}
                         </Select>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="maxResponseTokens">Maximálna dĺžka odpovede (tokeny)</Label>
-                        <Input
-                          id="maxResponseTokens"
-                          type="number"
-                          min="50"
-                          max="1000"
-                          value={maxResponseTokens}
-                          onChange={(e) => setMaxResponseTokens(parseInt(e.target.value) || 300)}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Maximálny počet tokenov v AI odpovedi (300 = cca 225 slov)
-                        </p>
-                      </div>
+                      {responseMode === "ai" && (
+                        <div className="space-y-2">
+                          <Label htmlFor="maxResponseTokens">Maximálna dĺžka odpovede (tokeny)</Label>
+                          <Input
+                            id="maxResponseTokens"
+                            type="number"
+                            min="50"
+                            max="1000"
+                            value={maxResponseTokens}
+                            onChange={(e) => setMaxResponseTokens(parseInt(e.target.value) || 300)}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Maximálny počet tokenov v AI odpovedi (300 = cca 225 slov)
+                          </p>
+                        </div>
+                      )}
 
                     </div>
                   </CardContent>
