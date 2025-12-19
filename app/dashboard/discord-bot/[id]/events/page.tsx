@@ -422,8 +422,9 @@ export default function EventsPage() {
 
       if (error) throw error;
 
-      setShowEventWizard(false);
-      setEditingEvent(null);
+      // This function is likely not used anymore, but keep for compatibility
+      // setShowEventWizard(false);
+      // setEditingEvent(null);
       loadFlows();
     } catch (error) {
       console.error("Error saving event:", error);
