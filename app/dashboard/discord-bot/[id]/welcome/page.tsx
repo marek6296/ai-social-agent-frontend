@@ -215,6 +215,7 @@ export default function WelcomePage() {
       name: flow.name,
       enabled: flow.enabled,
       sendToChannel: !!messageAction?.config?.channel_id,
+      guildId: messageAction?.config?.guild_id || "",
       channelId: messageAction?.config?.channel_id || "",
       sendDM: !!dmAction,
       dmMessage: dmAction?.config?.text || "",
