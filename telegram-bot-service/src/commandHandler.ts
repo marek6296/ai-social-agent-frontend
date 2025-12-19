@@ -15,7 +15,7 @@ export async function processCommand(
   bot: TelegramBot,
   telegraf: Telegraf
 ): Promise<void> {
-  if (!ctx.message || !('text' in ctx.message)) {
+  if (!ctx.message || !('text' in ctx.message) || !ctx.chat) {
     return;
   }
 
