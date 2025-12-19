@@ -191,7 +191,7 @@ export function FlowEditor({ botId, flow, onSave, onCancel, module }: FlowEditor
   const handleActionRemove = (index: number) => {
     setFormData({
       ...formData,
-      actions: formData.actions.filter((_, i) => i !== index),
+      actions: formData.actions.filter((_: any, i: number) => i !== index),
     });
   };
 
@@ -701,7 +701,7 @@ export function FlowEditor({ botId, flow, onSave, onCancel, module }: FlowEditor
                             <button
                               type="button"
                               onClick={() => {
-                                const newChannels = formData.conditions.ignored_channels.filter((_, i) => i !== idx);
+                                const newChannels = formData.conditions.ignored_channels.filter((_: any, i: number) => i !== idx);
                                 setFormData({
                                   ...formData,
                                   conditions: {
