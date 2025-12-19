@@ -32,8 +32,25 @@ export function useDiscordGuilds(botId: string | null) {
   const [guilds, setGuilds] = useState<DiscordGuild[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refetchKey, setRefetchKey] = useState(0);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const refetchTriggerRef = useRef<number>(0);
+
+  // Watch for refetch triggers
+  useEffect(() => {
+    if (!botId) return;
+    
+    const checkRefetch = () => {
+      const trigger = REFETCH_TRIGGERS.get(botId) || 0;
+      setRefetchKey(trigger);
+    };
+    
+    // Check immediately
+    checkRefetch();
+    
+    // Check periodically (every 100ms) for refetch triggers
+    const interval = setInterval(checkRefetch, 100);
+    return () => clearInterval(interval);
+  }, [botId]);
 
   useEffect(() => {
     if (!botId) {
@@ -44,14 +61,11 @@ export function useDiscordGuilds(botId: string | null) {
 
     // Get refetch trigger to force re-fetch when cache is cleared
     const refetchTrigger = REFETCH_TRIGGERS.get(botId) || 0;
-    const shouldRefetch = refetchTrigger !== refetchTriggerRef.current;
-    if (shouldRefetch) {
-      refetchTriggerRef.current = refetchTrigger;
-    }
+    const shouldIgnoreCache = refetchTrigger > 0;
 
     // Check cache first (but ignore cache if refetch was triggered)
     const cached = guildsCache.get(botId);
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION && !shouldRefetch) {
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION && !shouldIgnoreCache) {
       console.log("Using cached guilds:", cached.data.length); // Debug log
       setGuilds(cached.data);
       setError(null);
@@ -169,7 +183,7 @@ export function useDiscordGuilds(botId: string | null) {
         abortControllerRef.current.abort();
       }
     };
-  }, [botId]);
+  }, [botId, refetchKey]);
 
   return { guilds, loading, error };
 }
