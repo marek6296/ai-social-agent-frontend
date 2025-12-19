@@ -59,7 +59,11 @@ export type ActionType =
   | "save_to_db"
   | "notify_admin"
   | "ai_response"
-  | "send_template";
+  | "send_template"
+  | "warn"
+  | "timeout"
+  | "kick"
+  | "ban";
 
 export interface Flow {
   id?: string;
