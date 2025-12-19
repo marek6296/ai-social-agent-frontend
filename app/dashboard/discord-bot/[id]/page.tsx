@@ -661,7 +661,53 @@ export default function DiscordBotSettingsPage() {
                   </CardContent>
                 </Card>
 
-                {/* 3. Nastavenia správania bota */}
+                {/* 3. Základné nastavenia */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Základné nastavenia</CardTitle>
+                    <CardDescription>
+                      Jazyk, časové pásmo, rate limit a ďalšie základné konfigurácie
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="botLanguage">Jazyk bota</Label>
+                        <Select value={botLanguage} onValueChange={setBotLanguage}>
+                          <SelectTrigger id="botLanguage">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="SK">Slovenčina</SelectItem>
+                            <SelectItem value="CZ">Čeština</SelectItem>
+                            <SelectItem value="EN">Angličtina</SelectItem>
+                            <SelectItem value="NO">Nórčina</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {responseMode === "ai" && (
+                        <div className="space-y-2">
+                          <Label htmlFor="maxResponseTokens">Maximálna dĺžka odpovede (tokeny)</Label>
+                          <Input
+                            id="maxResponseTokens"
+                            type="number"
+                            min="50"
+                            max="1000"
+                            value={maxResponseTokens}
+                            onChange={(e) => setMaxResponseTokens(parseInt(e.target.value) || 300)}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Maximálny počet tokenov v AI odpovedi (300 = cca 225 slov)
+                          </p>
+                        </div>
+                      )}
+
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 4. Nastavenia správania bota */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Nastavenia správania bota</CardTitle>
@@ -847,52 +893,6 @@ npm run dev`}
                           </div>
                         </div>
                       )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* 4. Základné nastavenia */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Základné nastavenia</CardTitle>
-                    <CardDescription>
-                      Jazyk, časové pásmo, rate limit a ďalšie základné konfigurácie
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="botLanguage">Jazyk bota</Label>
-                        <Select value={botLanguage} onValueChange={setBotLanguage}>
-                          <SelectTrigger id="botLanguage">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="SK">Slovenčina</SelectItem>
-                            <SelectItem value="CZ">Čeština</SelectItem>
-                            <SelectItem value="EN">Angličtina</SelectItem>
-                            <SelectItem value="NO">Nórčina</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {responseMode === "ai" && (
-                        <div className="space-y-2">
-                          <Label htmlFor="maxResponseTokens">Maximálna dĺžka odpovede (tokeny)</Label>
-                          <Input
-                            id="maxResponseTokens"
-                            type="number"
-                            min="50"
-                            max="1000"
-                            value={maxResponseTokens}
-                            onChange={(e) => setMaxResponseTokens(parseInt(e.target.value) || 300)}
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            Maximálny počet tokenov v AI odpovedi (300 = cca 225 slov)
-                          </p>
-                        </div>
-                      )}
-
                     </div>
                   </CardContent>
                 </Card>
