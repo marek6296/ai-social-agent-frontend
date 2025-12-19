@@ -58,7 +58,8 @@ export type ActionType =
   | "open_modal"
   | "save_to_db"
   | "notify_admin"
-  | "ai_response";
+  | "ai_response"
+  | "send_template";
 
 export interface Flow {
   id?: string;
