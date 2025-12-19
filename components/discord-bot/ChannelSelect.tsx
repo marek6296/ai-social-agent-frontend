@@ -65,20 +65,26 @@ export function ChannelSelect({
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
-            {channels.map((channel) => {
-              const displayName = channel.parent
-                ? `${channel.parent.name} / #${channel.name}`
-                : `#${channel.name}`;
-              return (
-                <SelectItem key={channel.id} value={channel.id}>
-                  {displayName}
-                </SelectItem>
-              );
-            })}
+            {channels && Array.isArray(channels) && channels.length > 0 ? (
+              channels.map((channel) => {
+                const displayName = channel.parent
+                  ? `${channel.parent.name} / #${channel.name}`
+                  : `#${channel.name}`;
+                return (
+                  <SelectItem key={channel.id} value={channel.id}>
+                    {displayName}
+                  </SelectItem>
+                );
+              })
+            ) : (
+              <SelectItem value="" disabled>
+                Žiadne kanály sa nenašli
+              </SelectItem>
+            )}
           </SelectContent>
         </Select>
       )}
-      {channels.length === 0 && !loading && !error && guildId && (
+      {channels && Array.isArray(channels) && channels.length === 0 && !loading && !error && guildId && (
         <p className="text-xs text-muted-foreground mt-1">
           Žiadne kanály sa nenašli
         </p>

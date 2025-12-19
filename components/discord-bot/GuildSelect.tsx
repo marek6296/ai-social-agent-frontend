@@ -59,15 +59,21 @@ export function GuildSelect({
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
-            {guilds.map((guild) => (
-              <SelectItem key={guild.id} value={guild.id}>
-                {guild.name}
+            {guilds && Array.isArray(guilds) && guilds.length > 0 ? (
+              guilds.map((guild) => (
+                <SelectItem key={guild.id} value={guild.id}>
+                  {guild.name}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="" disabled>
+                Žiadne servery sa nenašli
               </SelectItem>
-            ))}
+            )}
           </SelectContent>
         </Select>
       )}
-      {guilds.length === 0 && !loading && !error && (
+      {guilds && Array.isArray(guilds) && guilds.length === 0 && !loading && !error && (
         <p className="text-xs text-muted-foreground mt-1">
           Bot nie je pridaný na žiadny server
         </p>
