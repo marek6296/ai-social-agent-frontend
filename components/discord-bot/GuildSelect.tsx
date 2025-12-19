@@ -36,7 +36,7 @@ export function GuildSelect({
       {loading ? (
         <div className="p-2 text-sm text-muted-foreground">Načítavam servery...</div>
       ) : error ? (
-        <div className="p-2 text-sm text-destructive">
+        <div className="p-2 text-sm text-destructive border border-destructive/20 rounded-md bg-destructive/10">
           {error.includes("rate limit") ? (
             <div className="space-y-2">
               <p>{error}</p>
@@ -50,7 +50,17 @@ export function GuildSelect({
               </Button>
             </div>
           ) : (
-            <p>Chyba pri načítaní serverov: {error}</p>
+            <div className="space-y-2">
+              <p>Chyba pri načítaní serverov: {error}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+                className="w-full"
+              >
+                Obnoviť
+              </Button>
+            </div>
           )}
         </div>
       ) : guilds && Array.isArray(guilds) && guilds.length > 0 ? (
@@ -68,7 +78,21 @@ export function GuildSelect({
         </Select>
       ) : (
         <div className="p-2 text-sm text-muted-foreground border rounded-md bg-muted/50">
-          Bot nie je pridaný na žiadny server. Pridaj ho najprv na Discord server.
+          <p className="mb-2">Bot nie je pridaný na žiadny server alebo sa servery nenašli.</p>
+          <p className="text-xs mb-2">Skontroluj:</p>
+          <ul className="text-xs list-disc list-inside space-y-1 mb-2">
+            <li>Či je bot správne prihlásený s platným tokenom</li>
+            <li>Či je bot pridaný na Discord server</li>
+            <li>Či má bot oprávnenia na serveri</li>
+          </ul>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.reload()}
+            className="w-full mt-2"
+          >
+            Obnoviť
+          </Button>
         </div>
       )}
     </div>
