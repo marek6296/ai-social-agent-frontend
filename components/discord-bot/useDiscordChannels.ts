@@ -15,6 +15,26 @@ const channelsCache = new Map<string, { data: DiscordChannel[]; timestamp: numbe
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const LOADING_PROMISES = new Map<string, Promise<DiscordChannel[]>>();
 
+// Function to clear cache for a specific bot+guild (can be called from components)
+export function clearChannelsCache(botId: string | null, guildId: string | null) {
+  if (botId && guildId) {
+    const cacheKey = `${botId}:${guildId}`;
+    channelsCache.delete(cacheKey);
+    LOADING_PROMISES.delete(cacheKey);
+  } else if (botId) {
+    // Clear all channels for this bot
+    for (const key of channelsCache.keys()) {
+      if (key.startsWith(`${botId}:`)) {
+        channelsCache.delete(key);
+        LOADING_PROMISES.delete(key);
+      }
+    }
+  } else {
+    channelsCache.clear();
+    LOADING_PROMISES.clear();
+  }
+}
+
 export function useDiscordChannels(botId: string | null, guildId: string | null) {
   const [channels, setChannels] = useState<DiscordChannel[]>([]);
   const [loading, setLoading] = useState(false);

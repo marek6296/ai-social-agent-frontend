@@ -12,6 +12,17 @@ const guildsCache = new Map<string, { data: DiscordGuild[]; timestamp: number }>
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const LOADING_PROMISES = new Map<string, Promise<DiscordGuild[]>>();
 
+// Function to clear cache for a specific bot (can be called from components)
+export function clearGuildsCache(botId: string | null) {
+  if (botId) {
+    guildsCache.delete(botId);
+    LOADING_PROMISES.delete(botId);
+  } else {
+    guildsCache.clear();
+    LOADING_PROMISES.clear();
+  }
+}
+
 export function useDiscordGuilds(botId: string | null) {
   const [guilds, setGuilds] = useState<DiscordGuild[]>([]);
   const [loading, setLoading] = useState(false);

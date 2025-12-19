@@ -1,6 +1,6 @@
 "use client";
 
-import { useDiscordGuilds } from "./useDiscordGuilds";
+import { useDiscordGuilds, clearGuildsCache } from "./useDiscordGuilds";
 import {
   Select,
   SelectContent,
@@ -88,10 +88,13 @@ export function GuildSelect({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              clearGuildsCache(botId);
+              window.location.reload();
+            }}
             className="w-full mt-2"
           >
-            Obnoviť
+            Obnoviť a načítať znova
           </Button>
         </div>
       )}
