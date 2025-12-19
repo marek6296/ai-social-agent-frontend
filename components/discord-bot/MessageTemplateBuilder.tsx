@@ -155,7 +155,14 @@ export function MessageTemplateBuilder({
 
   const updateButton = (
     index: number,
-    updates: Partial<MessagePage["components"]["buttons"][0]>
+    updates: Partial<{
+      id: string;
+      label: string;
+      style: "primary" | "secondary" | "success" | "danger" | "link";
+      emoji?: string;
+      url?: string;
+      action?: string;
+    }>
   ) => {
     const buttons = [...(currentPage.components.buttons || [])];
     buttons[index] = { ...buttons[index], ...updates };
