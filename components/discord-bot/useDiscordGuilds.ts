@@ -45,10 +45,13 @@ export function useDiscordGuilds(botId: string | null) {
       return;
     }
 
+    // Set loading state
+    setLoading(true);
+    setError(null);
+    
     // Check if there's already a loading promise for this botId
     const existingPromise = LOADING_PROMISES.get(botId);
     if (existingPromise) {
-      setLoading(true);
       existingPromise
         .then((data) => {
           setGuilds(data);
@@ -56,6 +59,10 @@ export function useDiscordGuilds(botId: string | null) {
           setLoading(false);
         })
         .catch((err) => {
+          // Ignore abort errors
+          if (err.name === 'AbortError') {
+            return;
+          }
           setError(err instanceof Error ? err.message : "Unknown error");
           setGuilds([]);
           setLoading(false);
@@ -64,15 +71,12 @@ export function useDiscordGuilds(botId: string | null) {
     }
 
     // Create new loading promise
-    const loadGuilds = async () => {
+    const loadGuilds = async (): Promise<DiscordGuild[]> => {
       // Cancel previous request if any
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
       abortControllerRef.current = new AbortController();
-
-      setLoading(true);
-      setError(null);
 
       try {
         const response = await fetch(`/api/discord-bot/${botId}/guilds`, {
@@ -84,54 +88,65 @@ export function useDiscordGuilds(botId: string | null) {
           if (response.status === 429) {
             const retryAfter = response.headers.get("Retry-After") || "1";
             const errorMessage = `Discord API rate limit. Skús to znova za ${retryAfter} sekúnd.`;
-            setError(errorMessage);
-            setGuilds([]);
-            LOADING_PROMISES.delete(botId);
-            return;
+            throw new Error(errorMessage);
           }
           
           // For other errors, try to get error message from response
           const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
           const errorMessage = errorData.error || `HTTP ${response.status}`;
-          setError(errorMessage);
-          setGuilds([]);
-          LOADING_PROMISES.delete(botId);
-          return;
+          throw new Error(errorMessage);
         }
 
         const data = await response.json();
-        console.log("Guilds API response:", data); // Debug log
+        console.log("Guilds API response (raw):", JSON.stringify(data, null, 2)); // Debug log
         
         // Handle both formats: { guilds: [...] } and direct array
         const guildsArray = data.guilds || (Array.isArray(data) ? data : []);
+        console.log("Guilds array parsed:", guildsArray, "Length:", guildsArray?.length); // Debug log
         
         if (Array.isArray(guildsArray)) {
+          console.log(`Caching ${guildsArray.length} guilds for bot ${botId}`); // Debug log
           // Cache the result
           guildsCache.set(botId, {
             data: guildsArray,
             timestamp: Date.now(),
           });
-          setGuilds(guildsArray);
-          setError(null);
+          return guildsArray; // Return the array so promise resolves with it
         } else {
           console.error("Invalid guilds data format:", data);
-          setError("Invalid guilds data format");
-          setGuilds([]);
+          throw new Error("Invalid guilds data format");
         }
       } catch (err: any) {
+        // Ignore abort errors (they will be caught by cleanup)
+        if (err.name === 'AbortError') {
+          throw err;
+        }
+        throw err;
+      }
+    };
+
+    const promise = loadGuilds()
+      .then((guildsArray) => {
+        console.log("Promise resolved with guilds:", guildsArray?.length || 0); // Debug log
+        setGuilds(guildsArray);
+        setError(null);
+        setLoading(false);
+        LOADING_PROMISES.delete(botId); // Clean up after successful resolution
+        return guildsArray;
+      })
+      .catch((err) => {
         // Ignore abort errors
         if (err.name === 'AbortError') {
+          LOADING_PROMISES.delete(botId); // Clean up even on abort
           return;
         }
         setError(err instanceof Error ? err.message : "Unknown error");
         setGuilds([]);
-      } finally {
         setLoading(false);
-        LOADING_PROMISES.delete(botId);
-      }
-    };
-
-    const promise = loadGuilds();
+        LOADING_PROMISES.delete(botId); // Clean up after error
+        throw err;
+      });
+    
     LOADING_PROMISES.set(botId, promise);
 
     // Cleanup function
