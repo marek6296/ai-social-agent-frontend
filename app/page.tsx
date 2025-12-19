@@ -6,8 +6,97 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Sparkles, Zap, Shield, MessageSquare, CheckCircle2, TrendingUp, Clock, Globe } from "lucide-react";
+import {
+  ArrowRight,
+  Sparkles,
+  Zap,
+  Shield,
+  MessageSquare,
+  CheckCircle2,
+  TrendingUp,
+  Clock,
+  Globe,
+  MessageCircle,
+  Send,
+  Instagram,
+  Bot,
+  Settings,
+  BarChart3,
+  Users,
+} from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+
+const services = [
+  {
+    id: "web-bot",
+    title: "AI Chatbot pre Web",
+    description: "Inteligentný chatbot pre tvoj web, ktorý odpovedá na otázky návštevníkov a zachytáva leady. Jednoduchá integrácia pomocou embed kódu.",
+    icon: Globe,
+    color: "text-emerald-500",
+    bgColor: "bg-emerald-500/10",
+    hoverColor: "hover:bg-emerald-500/20",
+    borderColor: "border-emerald-500/20",
+    gradient: "from-emerald-500/10 to-emerald-500/5",
+    features: [
+      "24/7 automatické odpovede",
+      "Zbieranie leadov",
+      "Integrácia na akýkoľvek web",
+      "Štatistiky a analýzy",
+    ],
+  },
+  {
+    id: "discord-bot",
+    title: "Discord Chatbot",
+    description: "Plnohodnotný Discord bot s AI odpoveďami, moderáciou, welcome správami, eventami, ankietami a interaktívnymi menu. Kompletná automatizácia servera.",
+    icon: MessageCircle,
+    color: "text-indigo-500",
+    bgColor: "bg-indigo-500/10",
+    hoverColor: "hover:bg-indigo-500/20",
+    borderColor: "border-indigo-500/20",
+    gradient: "from-indigo-500/10 to-indigo-500/5",
+    features: [
+      "AI odpovede na správy",
+      "Moderácia a bezpečnosť",
+      "Welcome & onboarding",
+      "Eventy a ankety",
+      "Interaktívne menu",
+    ],
+  },
+  {
+    id: "telegram-bot",
+    title: "Telegram Chatbot",
+    description: "Vytvor Telegram bota, ktorý komunikuje s používateľmi a poskytuje automatizované odpovede. Ideálny pre podporu zákazníkov.",
+    icon: Send,
+    color: "text-blue-500",
+    bgColor: "bg-blue-500/10",
+    hoverColor: "hover:bg-blue-500/20",
+    borderColor: "border-blue-500/20",
+    gradient: "from-blue-500/10 to-blue-500/5",
+    features: [
+      "AI konverzácie",
+      "Automatizované odpovede",
+      "Správa zákazníkov",
+      "Analytics a reporting",
+    ],
+  },
+  {
+    id: "instagram-bot",
+    title: "Instagram Chatbot",
+    description: "Automatizuj odpovede na Instagram DMs a komentáre s pomocou AI chatbota. Zvyšuj engagement a odpovedaj zákazníkom okamžite.",
+    icon: Instagram,
+    color: "text-pink-500",
+    bgColor: "bg-pink-500/10",
+    hoverColor: "hover:bg-pink-500/20",
+    borderColor: "border-pink-500/20",
+    gradient: "from-pink-500/10 to-pink-500/5",
+    features: [
+      "Odpovede na DMs",
+      "Správa komentárov",
+      "Zvyšovanie engagement",
+      "Automatizácia komunikácie",
+    ],
+  },
+];
 
 export default function Home() {
   useEffect(() => {
@@ -51,6 +140,9 @@ export default function Home() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
+            <Link href="#services" className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block">
+              Služby
+            </Link>
             <Link href="#features" className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block">
               Funkcie
             </Link>
@@ -85,30 +177,29 @@ export default function Home() {
           >
             <Badge variant="secondary" className="gap-2">
               <Sparkles className="h-3 w-3" />
-              AI chatbot pre firmy
+              AI automatizácia pre sociálne siete
             </Badge>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight px-2">
-              Premení tvoju webstránku
+              Vytvor si svojho
               <br />
               <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                na nonstop AI asistenta
+                AI asistenta
               </span>
             </h1>
             <p className="max-w-2xl text-base sm:text-lg md:text-xl text-muted-foreground px-4">
-              AI Social Agent je firemný AI chatbot, ktorý vie odpovedať na otázky
-              zákazníkov, zbiera leady a pomáha s podporou – priamo na tvojom webe.
-              Stačí vložiť krátky embed kód a chatbot beží 24/7.
+              AI Social Agent je platforma pre vytvorenie inteligentných chatbotov pre web, Discord, Telegram a Instagram. 
+              Automatizuj komunikáciu, zvyšuj engagement a šetrí čas tvojho tímu.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
               <Button size="default" className="text-sm sm:text-base px-4 sm:px-6" asChild>
                 <Link href="/signup">
-                  Vytvoriť chatbota
+                  Začať zadarmo
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="default" variant="outline" className="text-sm sm:text-base px-4 sm:px-6" asChild>
-                <Link href="#pricing" onClick={handleScrollToPricing}>
-                  Pozrieť cenník
+                <Link href="#services">
+                  Pozrieť služby
                 </Link>
               </Button>
             </div>
@@ -119,99 +210,93 @@ export default function Home() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-primary" />
-                Jednoduchý embed na každý web
+                Jednoduchá konfigurácia
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-primary" />
-                Tréning na FAQ, článkoch a dokumentoch
+                AI powered
               </div>
             </div>
-          </motion.div>
-
-          {/* Benefits Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="w-full max-w-4xl mt-8"
-          >
-            <Card className="border-2 shadow-xl bg-gradient-to-br from-card to-card/50 overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b text-center">
-                <CardTitle className="text-2xl mb-2">Prečo si vybrať AI Social Agent?</CardTitle>
-                <CardDescription className="text-base">
-                  Všetko, čo potrebuješ pre úspešný AI chatbot na jednom mieste
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-6 sm:p-8">
-                <div className="grid md:grid-cols-2 gap-6">
-                  {[
-                    {
-                      icon: Clock,
-                      title: "24/7 dostupnosť",
-                      description: "Tvoj chatbot odpovedá zákazníkom nepretržite, aj keď si offline.",
-                    },
-                    {
-                      icon: TrendingUp,
-                      title: "Zvyšuje konverzie",
-                      description: "Zbieraj leady automaticky a zvyšuj počet objednávok.",
-                    },
-                    {
-                      icon: Zap,
-                      title: "Okamžité odpovede",
-                      description: "Zákazníci dostanú odpoveď za sekundy, nie hodiny alebo dni.",
-                    },
-                    {
-                      icon: Globe,
-                      title: "Jednoduchá integrácia",
-                      description: "Jeden riadok kódu a chatbot je na tvojom webe za minúty.",
-                    },
-                    {
-                      icon: Shield,
-                      title: "Bezpečnosť dát",
-                      description: "Tvoje dáta sú šifrované a chránené podľa najvyšších štandardov.",
-                    },
-                    {
-                      icon: CheckCircle2,
-                      title: "Bez záväzkov",
-                      description: "Začni zadarmo a zruš kedykoľvek. Žiadne skryté poplatky.",
-                    },
-                  ].map((benefit, index) => (
-                    <motion.div
-                      key={benefit.title}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 + index * 0.1 }}
-                      className="flex items-start gap-4"
-                    >
-                      <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <benefit.icon className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-base mb-1">{benefit.title}</h3>
-                        <p className="text-sm text-muted-foreground">{benefit.description}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-                <div className="mt-8 pt-6 border-t text-center">
-                  <Button size="lg" className="text-base px-8" asChild>
-                    <Link href="/signup">
-                      Začať zadarmo
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Link>
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-3">
-                    Bez kreditnej karty • Aktivácia za 2 minúty • Podpora 24/7
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
           </motion.div>
         </div>
       </section>
 
+      {/* Services Section */}
+      <section id="services" className="container py-24 px-4 sm:px-6">
+        <div className="mx-auto max-w-7xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
+              Naše služby
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Vyber si správneho AI asistenta pre tvoju platformu
+            </p>
+          </motion.div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {services.map((service, index) => (
+              <motion.div
+                key={service.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="flex"
+              >
+                <Card className="group relative w-full flex flex-col h-full cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:border-primary/50 overflow-hidden border-border/50">
+                  {/* Gradient overlay */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} transition-all duration-500 pointer-events-none opacity-0 group-hover:opacity-100`} />
+                  
+                  {/* Shine effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full"
+                    transition={{ duration: 0.7 }}
+                  />
+                  
+                  <CardHeader className="relative z-10 pb-4 flex-1 flex flex-col">
+                    <div className={`h-16 w-16 rounded-2xl ${service.bgColor} ${service.hoverColor} flex items-center justify-center mb-6 transition-colors shadow-lg border ${service.borderColor}`}>
+                      <service.icon className={`h-8 w-8 ${service.color}`} />
+                    </div>
+                    <CardTitle className="text-2xl mb-3">{service.title}</CardTitle>
+                    <CardDescription className="text-base leading-relaxed flex-1 mb-4">
+                      {service.description}
+                    </CardDescription>
+                    <div className="space-y-2">
+                      {service.features.map((feature, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardHeader>
+                  <CardFooter className="relative z-10 pt-0 mt-auto">
+                    <Button
+                      asChild
+                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                      variant="outline"
+                    >
+                      <Link href="/signup" className="flex items-center justify-center gap-2">
+                        <span>Začať</span>
+                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section id="features" className="container py-24">
+      <section id="features" className="container py-24 px-4 sm:px-6">
         <div className="mx-auto max-w-5xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -224,7 +309,7 @@ export default function Home() {
               Prečo AI Social Agent?
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Všetko, čo potrebuješ pre profesionálny AI chatbot na tvojom webe.
+              Všetko, čo potrebuješ pre profesionálnych AI asistentov na jednom mieste.
             </p>
           </motion.div>
 
@@ -233,17 +318,32 @@ export default function Home() {
               {
                 icon: Zap,
                 title: "Rýchle odpovede",
-                description: "AI chatbot odpovedá v reálnom čase, 24/7 bez prestávok.",
+                description: "AI asistenti odpovedajú v reálnom čase, 24/7 bez prestávok.",
               },
               {
                 icon: Shield,
                 title: "Bezpečné a spoľahlivé",
-                description: "Tvoje dáta sú v bezpečí a chatbot je vždy dostupný.",
+                description: "Tvoje dáta sú v bezpečí a služby sú vždy dostupné.",
               },
               {
-                icon: MessageSquare,
-                title: "Jednoduchá integrácia",
-                description: "Vlož jeden riadok kódu a chatbot je na tvojom webe.",
+                icon: Settings,
+                title: "Jednoduchá konfigurácia",
+                description: "Nastavenie za minúty pomocou intuitívneho dashboardu.",
+              },
+              {
+                icon: BarChart3,
+                title: "Analytics a štatistiky",
+                description: "Sleduj výkon a optimalizuj komunikáciu s detailnými analýzami.",
+              },
+              {
+                icon: Users,
+                title: "Multi-platform podpora",
+                description: "Jeden dashboard pre všetky platformy - web, Discord, Telegram, Instagram.",
+              },
+              {
+                icon: Bot,
+                title: "AI powered",
+                description: "Vykročný AI model, ktorý sa učí a prispôsobuje tvojim potrebám.",
               },
             ].map((feature, index) => (
               <motion.div
@@ -270,8 +370,86 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Benefits Section */}
+      <section className="container py-24 px-4 sm:px-6">
+        <div className="mx-auto max-w-4xl">
+          <Card className="border-2 shadow-xl bg-gradient-to-br from-card to-card/50 overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b text-center">
+              <CardTitle className="text-2xl mb-2">Výhody AI Social Agent</CardTitle>
+              <CardDescription className="text-base">
+                Všetko, čo potrebuješ pre úspešnú automatizáciu komunikácie
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 sm:p-8">
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  {
+                    icon: Clock,
+                    title: "24/7 dostupnosť",
+                    description: "Tvoji AI asistenti odpovedajú nepretržite, aj keď si offline.",
+                  },
+                  {
+                    icon: TrendingUp,
+                    title: "Zvyšuje konverzie",
+                    description: "Zbieraj leady automaticky a zvyšuj počet objednávok.",
+                  },
+                  {
+                    icon: Zap,
+                    title: "Okamžité odpovede",
+                    description: "Zákazníci dostanú odpoveď za sekundy, nie hodiny alebo dni.",
+                  },
+                  {
+                    icon: Users,
+                    title: "Šetrí čas tímu",
+                    description: "Automatizuj opakujúce sa otázky a uvoľni čas pre dôležité úlohy.",
+                  },
+                  {
+                    icon: Shield,
+                    title: "Bezpečnosť dát",
+                    description: "Tvoje dáta sú šifrované a chránené podľa najvyšších štandardov.",
+                  },
+                  {
+                    icon: CheckCircle2,
+                    title: "Bez záväzkov",
+                    description: "Začni zadarmo a zruš kedykoľvek. Žiadne skryté poplatky.",
+                  },
+                ].map((benefit, index) => (
+                  <motion.div
+                    key={benefit.title}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 + index * 0.1 }}
+                    className="flex items-start gap-4"
+                  >
+                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <benefit.icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-base mb-1">{benefit.title}</h3>
+                      <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+              <div className="mt-8 pt-6 border-t text-center">
+                <Button size="lg" className="text-base px-8" asChild>
+                  <Link href="/signup">
+                    Začať zadarmo
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+                <p className="text-xs text-muted-foreground mt-3">
+                  Bez kreditnej karty • Aktivácia za 2 minúty • Podpora 24/7
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* Pricing Section */}
-      <section id="pricing" className="container py-24">
+      <section id="pricing" className="container py-24 px-4 sm:px-6">
         <div className="mx-auto max-w-5xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -284,8 +462,8 @@ export default function Home() {
               Cenník
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Vyber si plán, ktorý sedí tvojej firme. Všetky plány obsahujú AI
-              chatbota, embed kód na web a základné štatistiky konverzácií.
+              Vyber si plán, ktorý sedí tvojej firme. Všetky plány obsahujú prístup ku všetkým službám,
+              pokročilé nastavenia a štatistiky.
             </p>
             <p className="text-sm text-muted-foreground mt-2">
               Bez viazanosti, možnosť mesačného alebo ročného fakturovania.
@@ -307,28 +485,28 @@ export default function Home() {
                     <span className="text-3xl font-bold">Zadarmo</span>
                   </div>
                   <CardDescription className="mt-2">
-                    Ideálne pre malé firmy a jednoduché FAQ.
+                    Ideálne pre začiatky a testovanie.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      1 web + 1 chatbot
+                      1 bot na platformu
                     </li>
                     <li className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      Základný embed widget
+                      Základné funkcie
                     </li>
                     <li className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      Do 1 000 konverzácií mesačne
+                      Do 1 000 interakcií mesačne
                     </li>
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline" className="w-full">
-                    Vybrať plán
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link href="/signup">Začať zadarmo</Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -357,15 +535,15 @@ export default function Home() {
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      Neobmedzený počet chatbotov
+                      Neobmedzený počet botov
                     </li>
                     <li className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      Pokročilé nastavenia a customizácia
+                      Všetky pokročilé funkcie
                     </li>
                     <li className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      Do 10 000 konverzácií mesačne
+                      Do 10 000 interakcií mesačne
                     </li>
                     <li className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -374,9 +552,11 @@ export default function Home() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full">
-                    Vybrať plán
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                  <Button className="w-full" asChild>
+                    <Link href="/signup">
+                      Vybrať plán
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -404,7 +584,7 @@ export default function Home() {
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      Neobmedzený počet chatbotov
+                      Neobmedzený počet botov
                     </li>
                     <li className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -412,13 +592,17 @@ export default function Home() {
                     </li>
                     <li className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      Individuálne limity konverzácií
+                      Individuálne limity
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      Dedikovaná podpora
                     </li>
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline" className="w-full">
-                    Vybrať plán
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link href="/signup">Kontaktovať</Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -429,7 +613,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t py-6">
-        <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="container flex flex-col md:flex-row items-center justify-between gap-4 px-4 sm:px-6">
           <div className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} AI Social Agent. Všetky práva vyhradené.
           </div>
