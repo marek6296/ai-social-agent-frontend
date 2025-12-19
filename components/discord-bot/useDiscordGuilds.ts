@@ -139,11 +139,13 @@ export function useDiscordGuilds(botId: string | null) {
         
         if (Array.isArray(guildsArray)) {
           console.log(`Caching ${guildsArray.length} guilds for bot ${botId}`); // Debug log
-          // Cache the result
-          guildsCache.set(botId, {
-            data: guildsArray,
-            timestamp: Date.now(),
-          });
+          // Only cache if we have data (empty arrays should not be cached to allow retries)
+          if (guildsArray.length > 0) {
+            guildsCache.set(botId, {
+              data: guildsArray,
+              timestamp: Date.now(),
+            });
+          }
           return guildsArray; // Return the array so promise resolves with it
         } else {
           console.error("Invalid guilds data format:", data);
