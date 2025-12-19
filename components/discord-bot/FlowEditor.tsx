@@ -18,6 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ChannelSelect } from "./ChannelSelect";
 import { GuildSelect } from "./GuildSelect";
+import { supabase } from "@/lib/supabaseClient";
 import {
   Zap,
   Filter,
@@ -99,6 +100,36 @@ export function FlowEditor({ botId, flow, onSave, onCancel, module }: FlowEditor
   );
 
   const [activeTab, setActiveTab] = useState("trigger");
+  const [templates, setTemplates] = useState<Array<{ id: string; name: string }>>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
+  
+  // Load templates when component mounts
+  useEffect(() => {
+    const loadTemplates = async () => {
+      setLoadingTemplates(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data, error } = await supabase
+          .from("discord_message_templates")
+          .select("id, name")
+          .eq("owner_user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        setTemplates(data || []);
+      } catch (error) {
+        console.error("Error loading templates:", error);
+      } finally {
+        setLoadingTemplates(false);
+      }
+    };
+
+    if (module === "scheduled") {
+      loadTemplates();
+    }
+  }, [module]);
   
   // Extract guild_id from first action's config or use empty
   // For scheduled/welcome flows, we need to select a guild first
@@ -165,6 +196,10 @@ export function FlowEditor({ botId, flow, onSave, onCancel, module }: FlowEditor
         "save_to_db",
         "notify_admin",
       ];
+    }
+
+    if (module === "scheduled") {
+      return [...baseActions, "send_template"];
     }
 
     return baseActions;
@@ -911,6 +946,7 @@ export function FlowEditor({ botId, flow, onSave, onCancel, module }: FlowEditor
                                 "save_to_db": "Uložiť do DB",
                                 "notify_admin": "Notifikovať admina",
                                 "ai_response": "AI odpoveď",
+                                "send_template": "Použiť Message Template",
                               };
                               return (
                                 <Badge variant="default" className="font-semibold">
@@ -1092,6 +1128,73 @@ export function FlowEditor({ botId, flow, onSave, onCancel, module }: FlowEditor
                             placeholder="Footer text"
                           />
                         </div>
+                      </div>
+                    )}
+
+                    {action.type === "send_template" && (
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Vyber Message Template</Label>
+                          <Select
+                            value={action.config.template_id || ""}
+                            onValueChange={(value) => {
+                              const newActions = [...formData.actions];
+                              newActions[index].config.template_id = value;
+                              setFormData({ ...formData, actions: newActions });
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder={loadingTemplates ? "Načítavam templates..." : "Vyber template..."} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {templates.length === 0 ? (
+                                <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                                  {loadingTemplates ? "Načítavam..." : "Žiadne templates. Vytvor najprv template v sekcii Message Templates."}
+                                </div>
+                              ) : (
+                                templates.map((template) => (
+                                  <SelectItem key={template.id} value={template.id}>
+                                    {template.name}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Vyber template, ktorý sa má odoslať v plánovanom čase
+                          </p>
+                        </div>
+                        {(module === "scheduled" || module === "welcome") && (
+                          <div className="space-y-2">
+                            <GuildSelect
+                              botId={botId}
+                              value={selectedGuildId}
+                              onValueChange={(value) => {
+                                setSelectedGuildId(value);
+                                const newActions = [...formData.actions];
+                                newActions[index].config.guild_id = value;
+                                newActions[index].config.channel_id = "";
+                                setFormData({ ...formData, actions: newActions });
+                              }}
+                              label="Server"
+                              required
+                            />
+                            {selectedGuildId && (
+                              <ChannelSelect
+                                botId={botId}
+                                guildId={selectedGuildId}
+                                value={action.config.channel_id || ""}
+                                onValueChange={(value) => {
+                                  const newActions = [...formData.actions];
+                                  newActions[index].config.channel_id = value;
+                                  setFormData({ ...formData, actions: newActions });
+                                }}
+                                label="Kanál (kde sa má template odoslať)"
+                                required
+                              />
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
 
