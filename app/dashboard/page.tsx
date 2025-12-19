@@ -234,13 +234,13 @@ export default function ProductHubPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="flex items-center gap-3 flex-shrink-0"
+                className="flex items-center gap-2 md:gap-3 flex-shrink-0 flex-wrap"
               >
                 <Badge 
                   variant="outline" 
-                  className="flex gap-2 px-3 py-1.5 capitalize"
+                  className="flex gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 capitalize text-xs md:text-sm"
                 >
-                  <Zap className="h-3.5 w-3.5" />
+                  <Zap className="h-3 w-3 md:h-3.5 md:w-3.5" />
                   <span className="font-medium">
                     {plan === "unlimited" ? "Unlimited" : `${plan || "starter"} plán`}
                   </span>
@@ -249,9 +249,9 @@ export default function ProductHubPage() {
                   <Link href="/dashboard/admin">
                     <Badge 
                       variant="outline" 
-                      className="flex gap-2 px-3 py-1.5 border-purple-500/50 text-purple-500 cursor-pointer hover:bg-purple-500/10 transition-colors"
+                      className="flex gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 border-purple-500/50 text-purple-500 cursor-pointer hover:bg-purple-500/10 transition-colors text-xs md:text-sm"
                     >
-                      <Shield className="h-3.5 w-3.5" />
+                      <Shield className="h-3 w-3 md:h-3.5 md:w-3.5" />
                       <span className="font-medium">Super Admin</span>
                     </Badge>
                   </Link>
@@ -260,16 +260,17 @@ export default function ProductHubPage() {
                   <Link href="/dashboard/admin">
                     <Badge 
                       variant="outline" 
-                      className="flex gap-2 px-3 py-1.5 border-red-500/50 text-red-500 cursor-pointer hover:bg-red-500/10 transition-colors"
+                      className="flex gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 border-red-500/50 text-red-500 cursor-pointer hover:bg-red-500/10 transition-colors text-xs md:text-sm"
                     >
-                      <Shield className="h-3.5 w-3.5" />
+                      <Shield className="h-3 w-3 md:h-3.5 md:w-3.5" />
                       <span className="font-medium">Admin</span>
                     </Badge>
                   </Link>
                 )}
-                <Button variant="outline" onClick={handleLogout} size="sm">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Odhlásiť sa
+                <Button variant="outline" onClick={handleLogout} size="sm" className="text-xs md:text-sm px-2 md:px-3">
+                  <LogOut className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
+                  <span className="hidden sm:inline">Odhlásiť sa</span>
+                  <span className="sm:hidden">Odhlás</span>
                 </Button>
               </motion.div>
             </div>
