@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase } from "./supabaseClient";
 
 /**
  * Safely get user with automatic error handling for refresh token errors
