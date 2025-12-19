@@ -48,21 +48,8 @@ export async function GET(
       );
     }
 
-    // Get current user (bot) info to get guilds
-    const userResponse = await fetch(`${DISCORD_API_BASE}/users/@me`, {
-      headers: {
-        Authorization: `Bot ${decryptedToken}`,
-      },
-    });
-
-    if (!userResponse.ok) {
-      return NextResponse.json(
-        { error: "Failed to authenticate with Discord API" },
-        { status: 401 }
-      );
-    }
-
     // Get guilds where bot is a member
+    // Note: We skip /users/@me check as it's not necessary and /guilds/count works without it
     const guildsResponse = await fetch(`${DISCORD_API_BASE}/users/@me/guilds`, {
       headers: {
         Authorization: `Bot ${decryptedToken}`,
@@ -70,33 +57,40 @@ export async function GET(
     });
 
     if (!guildsResponse.ok) {
-      let errorMessage = "Discord API error";
+      // Handle errors similar to /guilds/count endpoint
+      if (guildsResponse.status === 401 || guildsResponse.status === 403) {
+        return NextResponse.json(
+          { error: "Bot token is invalid or expired", guilds: [] },
+          { status: 401 }
+        );
+      }
       
       if (guildsResponse.status === 429) {
         // Rate limit - check retry-after header
-        const retryAfter = guildsResponse.headers.get("Retry-After");
-        if (retryAfter) {
-          errorMessage = `Discord API rate limit. Skús to znova za ${retryAfter} sekúnd.`;
-          // Include retry-after in response headers so frontend can use it
-          return NextResponse.json(
-            { error: errorMessage, retryAfter: parseInt(retryAfter, 10) },
-            { 
-              status: 429,
-              headers: {
-                "Retry-After": retryAfter,
-              },
-            }
-          );
-        } else {
-          errorMessage = "Discord API rate limit. Prosím, skús to znova o chvíľu.";
-        }
-      } else {
-        const errorText = await guildsResponse.text().catch(() => "");
-        errorMessage = `Discord API error: ${errorText || `HTTP ${guildsResponse.status}`}`;
+        const retryAfter = guildsResponse.headers.get("Retry-After") || "1";
+        return NextResponse.json(
+          { 
+            error: `Discord API rate limit. Skús to znova za ${retryAfter} sekúnd.`,
+            guilds: [],
+            retryAfter: parseInt(retryAfter, 10)
+          },
+          { 
+            status: 429,
+            headers: {
+              "Retry-After": retryAfter,
+            },
+          }
+        );
       }
       
+      // For other errors, return empty array (similar to count endpoint)
+      console.warn(`Discord API error for bot ${botId}:`, guildsResponse.status);
+      const errorText = await guildsResponse.text().catch(() => "");
       return NextResponse.json(
-        { error: errorMessage },
+        { 
+          error: `Discord API error: ${errorText || `HTTP ${guildsResponse.status}`}`,
+          guilds: []
+        },
         { status: guildsResponse.status }
       );
     }
@@ -127,8 +121,12 @@ export async function GET(
     return NextResponse.json({ guilds });
   } catch (error: any) {
     console.error("Error fetching guilds:", error);
+    // Return empty array on error (similar to count endpoint)
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { 
+        error: error.message || "Internal server error",
+        guilds: []
+      },
       { status: 500 }
     );
   }
