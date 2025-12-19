@@ -53,30 +53,23 @@ export function GuildSelect({
             <p>Chyba pri načítaní serverov: {error}</p>
           )}
         </div>
-      ) : (
+      ) : guilds && Array.isArray(guilds) && guilds.length > 0 ? (
         <Select value={value} onValueChange={onValueChange}>
           <SelectTrigger>
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
-            {guilds && Array.isArray(guilds) && guilds.length > 0 ? (
-              guilds.map((guild) => (
-                <SelectItem key={guild.id} value={guild.id}>
-                  {guild.name}
-                </SelectItem>
-              ))
-            ) : (
-              <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                Žiadne servery sa nenašli
-              </div>
-            )}
+            {guilds.map((guild) => (
+              <SelectItem key={guild.id} value={guild.id}>
+                {guild.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
-      )}
-      {guilds && Array.isArray(guilds) && guilds.length === 0 && !loading && !error && (
-        <p className="text-xs text-muted-foreground mt-1">
-          Bot nie je pridaný na žiadny server
-        </p>
+      ) : (
+        <div className="p-2 text-sm text-muted-foreground border rounded-md bg-muted/50">
+          Bot nie je pridaný na žiadny server. Pridaj ho najprv na Discord server.
+        </div>
       )}
     </div>
   );
