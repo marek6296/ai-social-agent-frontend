@@ -973,6 +973,7 @@ export function FlowEditor({ botId, flow, onSave, onCancel, module }: FlowEditor
                               {actionType === "save_to_db" && "Uložiť do DB"}
                               {actionType === "notify_admin" && "Notifikovať admina"}
                               {actionType === "ai_response" && "AI odpoveď"}
+                              {actionType === "send_template" && "Použiť Message Template"}
                             </SelectItem>
                           ))}
                         </SelectContent>
