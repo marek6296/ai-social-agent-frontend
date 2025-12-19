@@ -56,11 +56,11 @@ const products = [
     gradient: "from-indigo-500/10 to-indigo-500/5",
   },
   {
-    id: "telegram-bot",
+    id: "telegram-bots",
     title: "Telegram Chatbot",
     description: "Vytvor Telegram bota, ktorý komunikuje s používateľmi a poskytuje automatizované odpovede.",
     icon: Send,
-    href: "/dashboard/telegram-bot",
+    href: "/dashboard/telegram-bots",
     color: "text-blue-500",
     bgColor: "bg-blue-500/10",
     hoverColor: "hover:bg-blue-500/20",

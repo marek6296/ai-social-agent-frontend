@@ -197,16 +197,16 @@ export function useDiscordChannels(botId: string | null, guildId: string | null)
         // Ignore abort errors
         if (err.name === 'AbortError') {
           LOADING_PROMISES.delete(cacheKey); // Clean up even on abort
-          return;
+          return [];
         }
         setError(err instanceof Error ? err.message : "Unknown error");
         setChannels([]);
         setLoading(false);
         LOADING_PROMISES.delete(cacheKey); // Clean up after error
-        throw err;
+        return [];
       });
     
-    LOADING_PROMISES.set(cacheKey, promise);
+    LOADING_PROMISES.set(cacheKey, promise as Promise<DiscordChannel[]>);
 
     // Cleanup function
     return () => {

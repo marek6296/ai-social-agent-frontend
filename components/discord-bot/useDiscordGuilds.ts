@@ -176,16 +176,16 @@ export function useDiscordGuilds(botId: string | null) {
         // Ignore abort errors
         if (err.name === 'AbortError') {
           LOADING_PROMISES.delete(botId); // Clean up even on abort
-          return;
+          return [];
         }
         setError(err instanceof Error ? err.message : "Unknown error");
         setGuilds([]);
         setLoading(false);
         LOADING_PROMISES.delete(botId); // Clean up after error
-        throw err;
+        return [];
       });
     
-    LOADING_PROMISES.set(botId, promise);
+    LOADING_PROMISES.set(botId, promise as Promise<DiscordGuild[]>);
 
     // Cleanup function
     return () => {
