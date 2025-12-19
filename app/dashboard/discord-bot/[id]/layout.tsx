@@ -92,8 +92,8 @@ export default function DiscordBotLayout({ children }: { children: ReactNode }) 
       ? "general"
       : modules.find((m) => pathname.startsWith(m.href(botId)))?.id || "general";
 
-  const NavigationContent = () => (
-    <nav className="p-4 space-y-1">
+  const NavigationContent = ({ isMobile = false }: { isMobile?: boolean }) => (
+    <nav className={cn("space-y-1", isMobile ? "p-4 bg-background" : "p-4")}>
       {modules.map((module) => {
         const Icon = module.icon;
         const isActive = activeModule === module.id;
@@ -105,13 +105,15 @@ export default function DiscordBotLayout({ children }: { children: ReactNode }) 
             href={href}
             onClick={() => setSidebarOpen(false)}
             className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
               isActive
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : isMobile
+                ? "text-foreground hover:bg-accent hover:text-accent-foreground"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className={cn("h-4 w-4", isMobile && !isActive && "text-foreground/70")} />
             <span>{module.label}</span>
           </Link>
         );
@@ -124,7 +126,7 @@ export default function DiscordBotLayout({ children }: { children: ReactNode }) 
       {/* Desktop: Ľavé menu */}
       <aside className="hidden md:block w-64 border-r bg-muted/40 flex-shrink-0">
         <div className="sticky top-0 max-h-screen overflow-y-auto">
-          <NavigationContent />
+          <NavigationContent isMobile={false} />
         </div>
       </aside>
 
@@ -139,9 +141,13 @@ export default function DiscordBotLayout({ children }: { children: ReactNode }) 
                 <span>Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0 bg-muted dark:bg-muted">
-              <div className="h-full bg-muted dark:bg-muted">
-                <NavigationContent />
+            <SheetContent side="left" className="w-72 p-0 bg-background border-r">
+              <div className="h-full bg-background">
+                <div className="border-b bg-muted/50 px-4 py-3 mb-2">
+                  <h2 className="text-lg font-semibold text-foreground">Navigácia</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Vyber sekciu nastavení</p>
+                </div>
+                <NavigationContent isMobile={true} />
               </div>
             </SheetContent>
           </Sheet>
