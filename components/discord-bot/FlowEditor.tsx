@@ -220,10 +220,6 @@ export function FlowEditor({ botId, flow, onSave, onCancel, module }: FlowEditor
       defaultConfig.inputs = [];
     } else if (type === "assign_role" || type === "ping_role") {
       defaultConfig.role_id = "";
-    } else if (type === "scheduled") {
-      defaultConfig.schedule_type = "time";
-      defaultConfig.time = "";
-      defaultConfig.interval_minutes = 60;
     }
     
     newActions[index] = {
