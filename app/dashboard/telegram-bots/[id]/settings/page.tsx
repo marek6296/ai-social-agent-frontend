@@ -175,34 +175,30 @@ export default function TelegramBotSettingsPage() {
         return;
       }
 
-      // Save templates
-      if (welcomeMessage.trim()) {
-        await supabase
-          .from("telegram_bot_templates")
-          .upsert({
-            bot_id: botId,
-            template_name: "welcome",
-            template_text: welcomeMessage.trim(),
-            template_variables: ["{first_name}", "{username}"],
-            updated_at: new Date().toISOString(),
-          }, {
-            onConflict: "bot_id,template_name"
-          });
-      }
+      // Save templates (upsert - create or update)
+      await supabase
+        .from("telegram_bot_templates")
+        .upsert({
+          bot_id: botId,
+          template_name: "welcome",
+          template_text: welcomeMessage.trim() || "",
+          template_variables: ["{first_name}", "{username}"],
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: "bot_id,template_name"
+        });
 
-      if (helpMessage.trim()) {
-        await supabase
-          .from("telegram_bot_templates")
-          .upsert({
-            bot_id: botId,
-            template_name: "help",
-            template_text: helpMessage.trim(),
-            template_variables: [],
-            updated_at: new Date().toISOString(),
-          }, {
-            onConflict: "bot_id,template_name"
-          });
-      }
+      await supabase
+        .from("telegram_bot_templates")
+        .upsert({
+          bot_id: botId,
+          template_name: "help",
+          template_text: helpMessage.trim() || "",
+          template_variables: [],
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: "bot_id,template_name"
+        });
 
       setSuccess("Nastavenia boli úspešne uložené!");
       setTimeout(() => setSuccess(null), 3000);
@@ -614,6 +610,65 @@ export default function TelegramBotSettingsPage() {
                     />
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Správy a šablóny */}
+        <TabsContent value="messages" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Správy a šablóny</CardTitle>
+              <CardDescription>
+                Úvodné správy a šablóny pre bota. Môžeš použiť premenné: {"{first_name}"}, {"{username}"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="welcomeMessage">
+                  Úvodná správa (Welcome)
+                  <Badge variant="outline" className="ml-2 text-xs">
+                    {moduleWelcome ? "Zapnuté" : "Vypnuté"}
+                  </Badge>
+                </Label>
+                <Textarea
+                  id="welcomeMessage"
+                  value={welcomeMessage}
+                  onChange={(e) => setWelcomeMessage(e.target.value)}
+                  placeholder="Vitaj {first_name}! 👋 Som tvoj asistent a som tu, aby som ti pomohol. Napíš /help pre pomoc."
+                  rows={4}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Táto správa sa pošle, keď používateľ spustí bota príkazom /start
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="helpMessage">
+                  Pomocná správa (Help)
+                  <Badge variant="outline" className="ml-2 text-xs">
+                    {moduleHelp ? "Zapnuté" : "Vypnuté"}
+                  </Badge>
+                </Label>
+                <Textarea
+                  id="helpMessage"
+                  value={helpMessage}
+                  onChange={(e) => setHelpMessage(e.target.value)}
+                  placeholder="Pomoc\n\n/start - Začať\n/help - Zobraziť túto pomoc\n\nMôžeš sa ma opýtať na čokoľvek a ja ti odpoviem!"
+                  rows={5}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Táto správa sa pošle, keď používateľ použije príkaz /help
+                </p>
+              </div>
+
+              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <p className="text-sm font-medium mb-2">💡 Premenné, ktoré môžeš použiť:</p>
+                <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                  <li><code className="bg-muted px-1 rounded">{"{first_name}"}</code> - Krstné meno používateľa</li>
+                  <li><code className="bg-muted px-1 rounded">{"{username}"}</code> - Telegram username používateľa</li>
+                </ul>
               </div>
             </CardContent>
           </Card>
