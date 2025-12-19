@@ -79,7 +79,8 @@ export async function POST(req: Request) {
     const maxTokens = botData.max_response_tokens || 300;
     const knowledgeSourceType = botData.knowledge_source_type || "none";
     const customKnowledgeText = botData.custom_knowledge_text || null;
-    const faqEntries = botData.faq_entries || [];
+    // FAQ entries are not directly on botData, they come from a separate query if needed
+    const faqEntries: any[] = [];
 
     // Tone text
     const toneText =
