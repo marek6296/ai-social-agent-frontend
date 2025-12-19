@@ -11,15 +11,20 @@ interface DiscordGuild {
 const guildsCache = new Map<string, { data: DiscordGuild[]; timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const LOADING_PROMISES = new Map<string, Promise<DiscordGuild[]>>();
+const REFETCH_TRIGGERS = new Map<string, number>();
 
 // Function to clear cache for a specific bot (can be called from components)
 export function clearGuildsCache(botId: string | null) {
   if (botId) {
     guildsCache.delete(botId);
     LOADING_PROMISES.delete(botId);
+    // Increment refetch trigger to force re-fetch
+    const current = REFETCH_TRIGGERS.get(botId) || 0;
+    REFETCH_TRIGGERS.set(botId, current + 1);
   } else {
     guildsCache.clear();
     LOADING_PROMISES.clear();
+    REFETCH_TRIGGERS.clear();
   }
 }
 
@@ -28,6 +33,7 @@ export function useDiscordGuilds(botId: string | null) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const refetchTriggerRef = useRef<number>(0);
 
   useEffect(() => {
     if (!botId) {
@@ -36,9 +42,17 @@ export function useDiscordGuilds(botId: string | null) {
       return;
     }
 
-    // Check cache first
+    // Get refetch trigger to force re-fetch when cache is cleared
+    const refetchTrigger = REFETCH_TRIGGERS.get(botId) || 0;
+    const shouldRefetch = refetchTrigger !== refetchTriggerRef.current;
+    if (shouldRefetch) {
+      refetchTriggerRef.current = refetchTrigger;
+    }
+
+    // Check cache first (but ignore cache if refetch was triggered)
     const cached = guildsCache.get(botId);
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION && !shouldRefetch) {
+      console.log("Using cached guilds:", cached.data.length); // Debug log
       setGuilds(cached.data);
       setError(null);
       setLoading(false);

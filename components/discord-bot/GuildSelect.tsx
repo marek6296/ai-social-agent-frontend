@@ -29,6 +29,17 @@ export function GuildSelect({
   required = false,
 }: GuildSelectProps) {
   const { guilds, loading, error } = useDiscordGuilds(botId);
+  
+  // Debug logging
+  console.log("GuildSelect render:", { 
+    botId, 
+    guildsLength: guilds?.length || 0, 
+    guilds,
+    loading, 
+    error,
+    isArray: Array.isArray(guilds),
+    condition: guilds && Array.isArray(guilds) && guilds.length > 0
+  });
 
   return (
     <div>
@@ -89,8 +100,9 @@ export function GuildSelect({
             variant="outline"
             size="sm"
             onClick={() => {
+              console.log("Clearing cache and refetching for bot:", botId);
               clearGuildsCache(botId);
-              window.location.reload();
+              // Force re-render by triggering state update - the useEffect will handle re-fetch
             }}
             className="w-full mt-2"
           >
