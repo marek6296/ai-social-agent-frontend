@@ -170,16 +170,21 @@ export default function DiscordBotSettingsPage() {
         return;
       }
 
-      // Also get server count separately
-      const { count } = await supabase
-        .from("discord_bot_servers")
-        .select("*", { count: "exact", head: true })
-        .eq("bot_id", botId)
-        .eq("is_active", true);
+      // Get server count from Discord API
+      let serverCount = 0;
+      try {
+        const countResponse = await fetch(`/api/discord-bot/${botId}/guilds/count`);
+        if (countResponse.ok) {
+          const countData = await countResponse.json();
+          serverCount = countData.count || 0;
+        }
+      } catch (err) {
+        console.warn("Failed to fetch server count from Discord API:", err);
+      }
       
       const botInfo = {
         ...botData,
-        total_servers: count || 0,
+        total_servers: serverCount,
         total_messages: botData.total_messages || 0,
       } as any;
       setBot(botInfo as DiscordBot);

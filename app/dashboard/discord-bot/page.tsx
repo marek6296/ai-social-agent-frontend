@@ -111,19 +111,24 @@ export default function DiscordBotPage() {
         return;
       }
 
-      // Load server counts separately for each bot
+      // Load server counts separately for each bot from Discord API
       if (botsData && botsData.length > 0) {
         const botsWithServers = await Promise.all(
           botsData.map(async (bot) => {
-            const { count } = await supabase
-              .from("discord_bot_servers")
-              .select("*", { count: "exact", head: true })
-              .eq("bot_id", bot.id)
-              .eq("is_active", true);
+            let serverCount = 0;
+            try {
+              const countResponse = await fetch(`/api/discord-bot/${bot.id}/guilds/count`);
+              if (countResponse.ok) {
+                const countData = await countResponse.json();
+                serverCount = countData.count || 0;
+              }
+            } catch (err) {
+              console.warn(`Failed to fetch server count for bot ${bot.id}:`, err);
+            }
             
             return {
               ...bot,
-              total_servers: count || 0,
+              total_servers: serverCount,
               total_messages: bot.total_messages || 0,
             };
           })

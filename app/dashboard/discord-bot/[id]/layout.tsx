@@ -139,8 +139,8 @@ export default function DiscordBotLayout({ children }: { children: ReactNode }) 
                 <span>Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0">
-              <div className="h-full bg-muted/40">
+            <SheetContent side="left" className="w-64 p-0 bg-muted dark:bg-muted">
+              <div className="h-full bg-muted dark:bg-muted">
                 <NavigationContent />
               </div>
             </SheetContent>
