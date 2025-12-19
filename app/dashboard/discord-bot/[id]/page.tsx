@@ -273,7 +273,7 @@ export default function DiscordBotSettingsPage() {
         mention_in_reply: mentionInReply,
         // Basic settings
         bot_language: botLanguage,
-        max_response_tokens: maxResponseTokens,
+        max_response_tokens: responseMode === "ai" ? maxResponseTokens : null, // max_response_tokens je relevantné len pre AI režim
         // Response mode (ai = bot + AI, rules = len bot)
         response_mode: responseMode,
         ai_enabled: responseMode === "ai", // AI je enabled len ak je responseMode === "ai"
