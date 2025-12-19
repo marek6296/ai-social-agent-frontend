@@ -60,6 +60,7 @@ export default function EventsPage() {
   const [selectedGuildId, setSelectedGuildId] = useState<string>("");
   const [participants, setParticipants] = useState<Record<string, EventParticipant[]>>({});
   const [loadingParticipants, setLoadingParticipants] = useState<Record<string, boolean>>({});
+  const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadFlows();
@@ -632,16 +633,24 @@ export default function EventsPage() {
                   </div>
                 </div>
               </CardHeader>
-              {/* Participants list for template-based events */}
-              {flow.template_id && participants[flow.template_id] && participants[flow.template_id].length > 0 && (
+              {/* Participants list for template-based events - only show when expanded */}
+              {flow.template_id && expandedEvents.has(flow.template_id) && (
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-sm flex items-center gap-2">
-                        <Users className="h-4 w-4" />
-                        Zoznam účastníkov
-                      </h4>
-                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-sm flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          Zoznam účastníkov
+                        </h4>
+                        {loadingParticipants[flow.template_id!] && (
+                          <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                        )}
+                      </div>
+                      {!participants[flow.template_id!] || participants[flow.template_id!].length === 0 ? (
+                        <div className="text-sm text-muted-foreground text-center py-4">
+                          Žiadni účastníci
+                        </div>
+                      ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {/* Going */}
                       <div className="space-y-2">
@@ -651,13 +660,15 @@ export default function EventsPage() {
                         </div>
                         <div className="space-y-1">
                           {participants[flow.template_id]
-                            .filter(p => p.status === "going")
+                            ?.filter(p => p.status === "going")
                             .map((p) => (
-                              <div key={p.id} className="text-xs text-muted-foreground p-2 bg-green-50 dark:bg-green-900/20 rounded">
-                                <div className="font-mono">ID: {p.user_id}</div>
+                              <div key={p.id} className="text-xs p-2 bg-green-50 dark:bg-green-900/20 rounded">
+                                <div className="font-medium text-foreground">
+                                  {p.data_json?.user_tag || p.user_tag || `ID: ${p.user_id.substring(0, 8)}...`}
+                                </div>
                               </div>
                             ))}
-                          {participants[flow.template_id].filter(p => p.status === "going").length === 0 && (
+                          {(!participants[flow.template_id] || participants[flow.template_id].filter(p => p.status === "going").length === 0) && (
                             <div className="text-xs text-muted-foreground italic">Žiadni prihlásení</div>
                           )}
                         </div>
@@ -671,13 +682,15 @@ export default function EventsPage() {
                         </div>
                         <div className="space-y-1">
                           {participants[flow.template_id]
-                            .filter(p => p.status === "maybe")
+                            ?.filter(p => p.status === "maybe")
                             .map((p) => (
-                              <div key={p.id} className="text-xs text-muted-foreground p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded">
-                                <div className="font-mono">ID: {p.user_id}</div>
+                              <div key={p.id} className="text-xs p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded">
+                                <div className="font-medium text-foreground">
+                                  {p.data_json?.user_tag || p.user_tag || `ID: ${p.user_id.substring(0, 8)}...`}
+                                </div>
                               </div>
                             ))}
-                          {participants[flow.template_id].filter(p => p.status === "maybe").length === 0 && (
+                          {(!participants[flow.template_id] || participants[flow.template_id].filter(p => p.status === "maybe").length === 0) && (
                             <div className="text-xs text-muted-foreground italic">Nikto</div>
                           )}
                         </div>
@@ -691,13 +704,15 @@ export default function EventsPage() {
                         </div>
                         <div className="space-y-1">
                           {participants[flow.template_id]
-                            .filter(p => p.status === "no")
+                            ?.filter(p => p.status === "no")
                             .map((p) => (
-                              <div key={p.id} className="text-xs text-muted-foreground p-2 bg-red-50 dark:bg-red-900/20 rounded">
-                                <div className="font-mono">ID: {p.user_id}</div>
+                              <div key={p.id} className="text-xs p-2 bg-red-50 dark:bg-red-900/20 rounded">
+                                <div className="font-medium text-foreground">
+                                  {p.data_json?.user_tag || p.user_tag || `ID: ${p.user_id.substring(0, 8)}...`}
+                                </div>
                               </div>
                             ))}
-                          {participants[flow.template_id].filter(p => p.status === "no").length === 0 && (
+                          {(!participants[flow.template_id] || participants[flow.template_id].filter(p => p.status === "no").length === 0) && (
                             <div className="text-xs text-muted-foreground italic">Nikto</div>
                           )}
                         </div>

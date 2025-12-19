@@ -124,10 +124,10 @@ export default function TemplatesPage() {
         return;
       }
 
-      // Load votes
+      // Load votes (select all fields including data_json for user_tag)
       const { data: votes, error } = await supabase
         .from("discord_message_state")
-        .select("user_id, status, data_json")
+        .select("*")
         .eq("template_id", templateId)
         .eq("published_message_id", published.id)
         .order("created_at", { ascending: false });
@@ -381,12 +381,18 @@ export default function TemplatesPage() {
                                 <div className="text-xs text-muted-foreground pl-2">
                                   {pollResults[template.id].votes
                                     .filter(v => v.option_index === idx)
-                                    .map((v, i) => (
-                                      <span key={i}>
-                                        <span className="font-mono">{v.user_id.substring(0, 8)}...</span>
-                                        {i < pollResults[template.id].votes.filter(v => v.option_index === idx).length - 1 && ", "}
-                                      </span>
-                                    ))}
+                                    .map((v, i) => {
+                                      // Try to get user_tag from data_json if available
+                                      const userTag = (v as any).data_json?.user_tag || (v as any).user_tag;
+                                      return (
+                                        <span key={i}>
+                                          <span className={userTag ? "font-medium text-foreground" : "font-mono"}>
+                                            {userTag || `${v.user_id.substring(0, 8)}...`}
+                                          </span>
+                                          {i < pollResults[template.id].votes.filter(v => v.option_index === idx).length - 1 && ", "}
+                                        </span>
+                                      );
+                                    })}
                                   {count === 0 && <span className="italic">Žiadne hlasy</span>}
                                 </div>
                               </div>

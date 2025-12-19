@@ -373,7 +373,11 @@ export async function initializeBot(botData: DiscordBot): Promise<boolean> {
                   .from('discord_message_state')
                   .update({
                     status: optionIndex.toString(),
-                    data_json: { option: poll.options[optionIndex], voted_at: new Date().toISOString() },
+                    data_json: { 
+                      option: poll.options[optionIndex], 
+                      voted_at: new Date().toISOString(),
+                      user_tag: buttonInteraction.user.tag, // Discord username#discriminator
+                    },
                     updated_at: new Date().toISOString(),
                   })
                   .eq('id', existingVote.id);
@@ -387,7 +391,11 @@ export async function initializeBot(botData: DiscordBot): Promise<boolean> {
                     message_id: buttonInteraction.message.id,
                     user_id: buttonInteraction.user.id,
                     status: optionIndex.toString(),
-                    data_json: { option: poll.options[optionIndex], voted_at: new Date().toISOString() },
+                    data_json: { 
+                      option: poll.options[optionIndex], 
+                      voted_at: new Date().toISOString(),
+                      user_tag: buttonInteraction.user.tag, // Discord username#discriminator
+                    },
                   });
               }
             } else {
@@ -400,7 +408,11 @@ export async function initializeBot(botData: DiscordBot): Promise<boolean> {
                   message_id: buttonInteraction.message.id,
                   user_id: buttonInteraction.user.id,
                   status: optionIndex.toString(),
-                  data_json: { option: poll.options[optionIndex], voted_at: new Date().toISOString() },
+                  data_json: { 
+                    option: poll.options[optionIndex], 
+                    voted_at: new Date().toISOString(),
+                    user_tag: buttonInteraction.user.tag, // Discord username#discriminator
+                  },
                 }, {
                   onConflict: 'published_message_id,user_id',
                 });
@@ -611,7 +623,11 @@ export async function initializeBot(botData: DiscordBot): Promise<boolean> {
                 message_id: buttonInteraction.message.id,
                 user_id: buttonInteraction.user.id,
                 status: status,
-                data_json: { action_type: actionType, timestamp: new Date().toISOString() },
+                data_json: { 
+                  action_type: actionType, 
+                  timestamp: new Date().toISOString(),
+                  user_tag: buttonInteraction.user.tag, // Discord username#discriminator
+                },
               });
               
               // Optionally manage role
