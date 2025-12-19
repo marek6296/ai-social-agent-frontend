@@ -648,7 +648,7 @@ export function FlowEditor({ botId, flow, onSave, onCancel, module }: FlowEditor
                             <button
                               type="button"
                               onClick={() => {
-                                const newChannels = formData.conditions.channels.filter((_, i) => i !== idx);
+                                const newChannels = formData.conditions.channels.filter((_: any, i: number) => i !== idx);
                                 setFormData({
                                   ...formData,
                                   conditions: {
