@@ -38,7 +38,7 @@ export default function TemplatesPage() {
   const [publishedMessages, setPublishedMessages] = useState<PublishedMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [pollResults, setPollResults] = useState<Record<string, {
-    votes: Array<{ user_id: string; option_index: number; option: string }>;
+    votes: Array<{ user_id: string; option_index: number; option: string; data_json?: any }>;
     counts: Record<number, number>;
     poll: { question: string; options: string[] };
   }>>({});
