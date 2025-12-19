@@ -208,7 +208,7 @@ export default function DiscordBotSettingsPage() {
         if (Array.isArray(botInfo.knowledge_source_type)) {
           setKnowledgeSourceTypes(new Set(botInfo.knowledge_source_type.filter((t: any) => t !== "none")));
         } else if (typeof botInfo.knowledge_source_type === 'string') {
-          const types = botInfo.knowledge_source_type.split(',').filter(t => t.trim() && t.trim() !== "none");
+          const types = botInfo.knowledge_source_type.split(',').filter((t: string) => t.trim() && t.trim() !== "none");
           setKnowledgeSourceTypes(new Set(types as ("faq" | "uploaded" | "custom")[]));
         }
       } else {
