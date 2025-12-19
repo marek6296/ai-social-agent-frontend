@@ -89,16 +89,22 @@ export function useDiscordGuilds(botId: string | null) {
         }
 
         const data = await response.json();
-        if (data.guilds && Array.isArray(data.guilds)) {
+        console.log("Guilds API response:", data); // Debug log
+        
+        // Handle both formats: { guilds: [...] } and direct array
+        const guildsArray = data.guilds || (Array.isArray(data) ? data : []);
+        
+        if (Array.isArray(guildsArray)) {
           // Cache the result
           guildsCache.set(botId, {
-            data: data.guilds,
+            data: guildsArray,
             timestamp: Date.now(),
           });
-          setGuilds(data.guilds);
+          setGuilds(guildsArray);
           setError(null);
         } else {
-          setError("Invalid guilds data");
+          console.error("Invalid guilds data format:", data);
+          setError("Invalid guilds data format");
           setGuilds([]);
         }
       } catch (err: any) {

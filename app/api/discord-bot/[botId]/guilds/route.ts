@@ -103,6 +103,15 @@ export async function GET(
 
     const guildsData = await guildsResponse.json();
 
+    // Discord API returns an array directly, not wrapped in an object
+    if (!Array.isArray(guildsData)) {
+      console.error("Discord API returned non-array guilds data:", guildsData);
+      return NextResponse.json(
+        { error: "Invalid response format from Discord API", guilds: [] },
+        { status: 500 }
+      );
+    }
+
     // Transform guilds data
     const guilds = guildsData.map((guild: any) => ({
       id: guild.id,
@@ -112,6 +121,8 @@ export async function GET(
         : null,
       memberCount: 0, // Discord API doesn't return member count in /users/@me/guilds
     }));
+
+    console.log(`Fetched ${guilds.length} guilds for bot ${botId}`); // Debug log
 
     return NextResponse.json({ guilds });
   } catch (error: any) {
