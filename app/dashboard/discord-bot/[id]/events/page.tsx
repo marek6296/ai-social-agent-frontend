@@ -295,7 +295,7 @@ export default function EventsPage() {
     }
   };
 
-  const handleSaveEvent = async (eventConfig: EventConfig) => {
+  const handleSaveEvent = async (eventConfig: any) => {
     try {
       // Convert EventConfig to Flow format
       // Calculate timestamp from date + time
