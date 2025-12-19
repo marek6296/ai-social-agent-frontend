@@ -81,9 +81,14 @@ export function useDiscordChannels(botId: string | null, guildId: string | null)
     const refetchTrigger = REFETCH_TRIGGERS.get(cacheKey) || 0;
     const shouldIgnoreCache = refetchTrigger > 0;
     
-    // Check cache first (but ignore cache if refetch was triggered)
+    // Check cache first (but ignore cache if refetch was triggered or cache is empty)
     const cached = channelsCache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION && !shouldIgnoreCache) {
+    const hasValidCache = cached && 
+      Date.now() - cached.timestamp < CACHE_DURATION && 
+      !shouldIgnoreCache &&
+      cached.data.length > 0; // Only use cache if it has data
+    
+    if (hasValidCache) {
       console.log("Using cached channels:", cached.data.length); // Debug log
       setChannels(cached.data);
       setError(null);

@@ -63,9 +63,14 @@ export function useDiscordGuilds(botId: string | null) {
     const refetchTrigger = REFETCH_TRIGGERS.get(botId) || 0;
     const shouldIgnoreCache = refetchTrigger > 0;
 
-    // Check cache first (but ignore cache if refetch was triggered)
+    // Check cache first (but ignore cache if refetch was triggered or cache is empty)
     const cached = guildsCache.get(botId);
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION && !shouldIgnoreCache) {
+    const hasValidCache = cached && 
+      Date.now() - cached.timestamp < CACHE_DURATION && 
+      !shouldIgnoreCache &&
+      cached.data.length > 0; // Only use cache if it has data
+    
+    if (hasValidCache) {
       console.log("Using cached guilds:", cached.data.length); // Debug log
       setGuilds(cached.data);
       setError(null);
