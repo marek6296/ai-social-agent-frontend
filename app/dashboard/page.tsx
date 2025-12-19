@@ -211,22 +211,22 @@ export default function ProductHubPage() {
   return (
     <AnimatedPage>
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="container mx-auto px-4 py-4 md:py-8 max-w-7xl">
           {/* Header */}
           <motion.header
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-12"
+            className="mb-6 md:mb-12"
           >
-            <div className="flex items-center justify-between flex-wrap gap-6">
+            <div className="flex items-center justify-between flex-wrap gap-4 md:gap-6">
               <div className="flex-1 min-w-0 flex flex-col justify-center">
                 {/* 
                   UPRAVITEĽNÉ HODNOTY - Riadok 214:
                   mb-1 = vzdialenosť medzi nadpisom a podnadpisom
                   Možnosti: mb-0.5, mb-1, mb-1.5, mb-2, mb-3
                 */}
-                <h1 className="text-5xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent tracking-tight leading-tight">
+                <h1 className="text-2xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent tracking-tight leading-tight">
                   Vitaj späť, {displayName}! 👋
                 </h1>
               </div>
@@ -280,7 +280,7 @@ export default function ProductHubPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-center mb-12"
+            className="text-center mb-6 md:mb-12"
           >
             {/* 
               UPRAVITEĽNÉ HODNOTY - Riadok 283:
@@ -288,13 +288,13 @@ export default function ProductHubPage() {
               font-medium = hrúbka (možnosti: font-normal, font-medium, font-semibold, font-bold)
               mb-12 = vzdialenosť od kariet (možnosti: mb-8, mb-10, mb-12, mb-16)
             */}
-            <p className="text-muted-foreground text-3xl font-medium">
+            <p className="text-muted-foreground text-xl md:text-3xl font-medium">
               Vyber si produkt, ktorý chceš spravovať
             </p>
           </motion.div>
 
           {/* Product Cards */}
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-4 md:gap-6 md:grid-cols-2">
             {products.map((product, index) => (
               <motion.div
                 key={product.id}
@@ -346,7 +346,7 @@ export default function ProductHubPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-12"
+            className="mt-8 md:mt-12"
           >
             <Card className="border-border/50 bg-gradient-to-br from-card to-card/50">
               <CardHeader>
