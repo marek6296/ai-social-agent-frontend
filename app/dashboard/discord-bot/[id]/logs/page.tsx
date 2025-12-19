@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Info,
   XCircle,
+  ArrowLeft,
 } from "lucide-react";
 
 interface LogEntry {
