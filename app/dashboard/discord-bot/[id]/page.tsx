@@ -562,7 +562,42 @@ export default function DiscordBotSettingsPage() {
           <div>
             <form onSubmit={handleSave}>
               <div className="grid gap-6">
-                {/* Response Mode Selection - HLAVNÝ PREPÍNAČ */}
+                {/* 1. Základné informácie */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Základné informácie</CardTitle>
+                    <CardDescription>Základné nastavenia bota</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="botName">
+                        Meno bota <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="botName"
+                        value={botName}
+                        onChange={(e) => setBotName(e.target.value)}
+                        placeholder="Meno bota"
+                        required
+                        maxLength={100}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Popis</Label>
+                      <Textarea
+                        id="description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Popis bota..."
+                        rows={3}
+                        maxLength={500}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 2. Režim odpovedania */}
                 <Card className="border-primary/20 bg-primary/5">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -626,42 +661,243 @@ export default function DiscordBotSettingsPage() {
                   </CardContent>
                 </Card>
 
-                {/* Basic Info */}
+                {/* 3. Nastavenia správania bota */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Základné informácie</CardTitle>
-                    <CardDescription>Základné nastavenia bota</CardDescription>
+                    <CardTitle>Nastavenia správania bota</CardTitle>
+                    <CardDescription>
+                      Konfiguruj, kedy a ako má bot reagovať na Discord serveri
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="botName">
-                        Meno bota <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="botName"
-                        value={botName}
-                        onChange={(e) => setBotName(e.target.value)}
-                        placeholder="Meno bota"
-                        required
-                        maxLength={100}
-                      />
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="auto_reply">Automatické odpovede</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Zapnúť/vypnúť automatické odpovede bota
+                          </p>
+                        </div>
+                        <Switch
+                          id="auto_reply"
+                          checked={autoReplyEnabled}
+                          onCheckedChange={setAutoReplyEnabled}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="respond_mentions">Reagovať na @mention</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Bot odpovie, keď je @mentionovaný
+                          </p>
+                        </div>
+                        <Switch
+                          id="respond_mentions"
+                          checked={respondToMentions}
+                          onCheckedChange={setRespondToMentions}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="respond_all">Reagovať na všetky správy</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Bot odpovie na každú správu (nie len @mention)
+                          </p>
+                        </div>
+                        <Switch
+                          id="respond_all"
+                          checked={respondToAllMessages}
+                          onCheckedChange={setRespondToAllMessages}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="respond_threads">Reagovať v threadoch</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Bot odpovie aj v threadoch (podvlaknoch)
+                          </p>
+                        </div>
+                        <Switch
+                          id="respond_threads"
+                          checked={respondInThreads}
+                          onCheckedChange={setRespondInThreads}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="mention_reply">@mention v odpovedi</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Bot @mentionuje používateľa v odpovedi
+                          </p>
+                        </div>
+                        <Switch
+                          id="mention_reply"
+                          checked={mentionInReply}
+                          onCheckedChange={setMentionInReply}
+                        />
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="description">Popis</Label>
-                      <Textarea
-                        id="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Popis bota..."
-                        rows={3}
-                        maxLength={500}
-                      />
+                    <div className="pt-4 border-t">
+                      {bot.status === 'active' ? (
+                        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <p className="text-sm text-green-700 dark:text-green-400 mb-2">
+                                ✅ <strong>Bot je aktívny</strong>
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Bot service beží a bot je pripojený k Discord API. Bot reaguje na správy podľa nastavení nižšie.
+                              </p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={async () => {
+                                const { data: userData } = await supabase.auth.getUser();
+                                if (!userData.user) return;
+                                
+                                const { error } = await supabase
+                                  .from("discord_bots")
+                                  .update({ status: 'inactive' })
+                                  .eq("id", botId)
+                                  .eq("user_id", userData.user.id);
+                                
+                                if (!error) {
+                                  // Aktualizuj status lokálne namiesto reloadu
+                                  setBot((prev) => prev ? { ...prev, status: 'inactive' as const } : null);
+                                }
+                              }}
+                              className="ml-4"
+                            >
+                              Deaktivovať
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <p className="text-sm text-yellow-700 dark:text-yellow-400 mb-2">
+                                ⚠️ <strong>Bot je momentálne neaktívny</strong>
+                              </p>
+                              <p className="text-xs text-muted-foreground mb-3">
+                                Bot service musí byť spustený a bot musí mať status "active" v databáze.
+                              </p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="default"
+                              size="sm"
+                              onClick={async () => {
+                                const { data: userData } = await supabase.auth.getUser();
+                                if (!userData.user) {
+                                  setError("Nie si prihlásený");
+                                  return;
+                                }
+                                
+                                setSaving(true);
+                                const { error } = await supabase
+                                  .from("discord_bots")
+                                  .update({ status: 'active' })
+                                  .eq("id", botId)
+                                  .eq("user_id", userData.user.id);
+                                
+                                if (error) {
+                                  setError("Chyba pri aktivácii bota: " + error.message);
+                                  setSaving(false);
+                                } else {
+                                  setSuccess("Bot bol aktivovaný! Service sa automaticky pripojí za pár sekúnd.");
+                                  // Aktualizuj status lokálne namiesto reloadu
+                                  setBot((prev) => prev ? { ...prev, status: 'active' as const } : null);
+                                }
+                              }}
+                              disabled={saving}
+                              className="ml-4"
+                            >
+                              {saving ? "Aktivujem..." : "Aktivovať bota"}
+                            </Button>
+                          </div>
+                          <div className="text-xs text-muted-foreground space-y-2">
+                            <div>
+                              <strong>📝 Jednoduchý postup (STAČÍ KLIKNÚŤ):</strong>
+                              <ol className="mt-1 ml-4 list-decimal space-y-1">
+                                <li>Klikni na modré tlačidlo <strong>"Aktivovať bota"</strong> vyššie 👆</li>
+                                <li>Status sa zmení na "active" v databáze</li>
+                                <li>Discord Bot Service (ktorý už beží) automaticky deteguje zmenu</li>
+                                <li>Bot sa pripojí k Discord API (môže to trvať 1-5 minút, service kontroluje každých 5 minút)</li>
+                                <li>Stránka sa automaticky obnoví každých 10 sekúnd a zobrazí "✅ Bot je aktívny"</li>
+                              </ol>
+                              <p className="mt-2 text-xs text-muted-foreground italic">
+                                💡 Tip: Ak chceš rýchlejšie pripojenie, reštartuj service v termináli (Ctrl+C a potom znovu npm run dev)
+                              </p>
+                            </div>
+                            <div className="mt-2 pt-2 border-t">
+                              <strong>🔧 Ak service nebeží:</strong>
+                              <pre className="mt-1 p-2 bg-muted rounded text-xs overflow-x-auto">
+{`cd discord-bot-service
+npm run dev`}
+                              </pre>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Discord Credentials - len pre custom boty */}
+                {/* 4. Základné nastavenia */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Základné nastavenia</CardTitle>
+                    <CardDescription>
+                      Jazyk, časové pásmo, rate limit a ďalšie základné konfigurácie
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="botLanguage">Jazyk bota</Label>
+                        <Select value={botLanguage} onValueChange={setBotLanguage}>
+                          <SelectTrigger id="botLanguage">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="SK">Slovenčina</SelectItem>
+                            <SelectItem value="CZ">Čeština</SelectItem>
+                            <SelectItem value="EN">Angličtina</SelectItem>
+                            <SelectItem value="NO">Nórčina</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {responseMode === "ai" && (
+                        <div className="space-y-2">
+                          <Label htmlFor="maxResponseTokens">Maximálna dĺžka odpovede (tokeny)</Label>
+                          <Input
+                            id="maxResponseTokens"
+                            type="number"
+                            min="50"
+                            max="1000"
+                            value={maxResponseTokens}
+                            onChange={(e) => setMaxResponseTokens(parseInt(e.target.value) || 300)}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Maximálny počet tokenov v AI odpovedi (300 = cca 225 slov)
+                          </p>
+                        </div>
+                      )}
+
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 5. Discord Credentials - len pre custom boty */}
                 {bot.bot_type === "custom" && (
                 <Card>
                   <CardHeader>
@@ -891,241 +1127,6 @@ export default function DiscordBotSettingsPage() {
                   </Card>
                 )}
 
-                {/* Bot Behavior Settings */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Nastavenia správania bota</CardTitle>
-                    <CardDescription>
-                      Konfiguruj, kedy a ako má bot reagovať na Discord serveri
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="auto_reply">Automatické odpovede</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Zapnúť/vypnúť automatické odpovede bota
-                          </p>
-                        </div>
-                        <Switch
-                          id="auto_reply"
-                          checked={autoReplyEnabled}
-                          onCheckedChange={setAutoReplyEnabled}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="respond_mentions">Reagovať na @mention</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Bot odpovie, keď je @mentionovaný
-                          </p>
-                        </div>
-                        <Switch
-                          id="respond_mentions"
-                          checked={respondToMentions}
-                          onCheckedChange={setRespondToMentions}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="respond_all">Reagovať na všetky správy</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Bot odpovie na každú správu (nie len @mention)
-                          </p>
-                        </div>
-                        <Switch
-                          id="respond_all"
-                          checked={respondToAllMessages}
-                          onCheckedChange={setRespondToAllMessages}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="respond_threads">Reagovať v threadoch</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Bot odpovie aj v threadoch (podvlaknoch)
-                          </p>
-                        </div>
-                        <Switch
-                          id="respond_threads"
-                          checked={respondInThreads}
-                          onCheckedChange={setRespondInThreads}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="mention_reply">@mention v odpovedi</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Bot @mentionuje používateľa v odpovedi
-                          </p>
-                        </div>
-                        <Switch
-                          id="mention_reply"
-                          checked={mentionInReply}
-                          onCheckedChange={setMentionInReply}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t">
-                      {bot.status === 'active' ? (
-                        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <p className="text-sm text-green-700 dark:text-green-400 mb-2">
-                                ✅ <strong>Bot je aktívny</strong>
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Bot service beží a bot je pripojený k Discord API. Bot reaguje na správy podľa nastavení nižšie.
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={async () => {
-                                const { data: userData } = await supabase.auth.getUser();
-                                if (!userData.user) return;
-                                
-                                const { error } = await supabase
-                                  .from("discord_bots")
-                                  .update({ status: 'inactive' })
-                                  .eq("id", botId)
-                                  .eq("user_id", userData.user.id);
-                                
-                                if (!error) {
-                                  // Aktualizuj status lokálne namiesto reloadu
-                                  setBot((prev) => prev ? { ...prev, status: 'inactive' as const } : null);
-                                }
-                              }}
-                              className="ml-4"
-                            >
-                              Deaktivovať
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <p className="text-sm text-yellow-700 dark:text-yellow-400 mb-2">
-                                ⚠️ <strong>Bot je momentálne neaktívny</strong>
-                              </p>
-                              <p className="text-xs text-muted-foreground mb-3">
-                                Bot service musí byť spustený a bot musí mať status "active" v databáze.
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="default"
-                              size="sm"
-                              onClick={async () => {
-                                const { data: userData } = await supabase.auth.getUser();
-                                if (!userData.user) {
-                                  setError("Nie si prihlásený");
-                                  return;
-                                }
-                                
-                                setSaving(true);
-                                const { error } = await supabase
-                                  .from("discord_bots")
-                                  .update({ status: 'active' })
-                                  .eq("id", botId)
-                                  .eq("user_id", userData.user.id);
-                                
-                                if (error) {
-                                  setError("Chyba pri aktivácii bota: " + error.message);
-                                  setSaving(false);
-                                } else {
-                                  setSuccess("Bot bol aktivovaný! Service sa automaticky pripojí za pár sekúnd.");
-                                  // Aktualizuj status lokálne namiesto reloadu
-                                  setBot((prev) => prev ? { ...prev, status: 'active' as const } : null);
-                                }
-                              }}
-                              disabled={saving}
-                              className="ml-4"
-                            >
-                              {saving ? "Aktivujem..." : "Aktivovať bota"}
-                            </Button>
-                          </div>
-                          <div className="text-xs text-muted-foreground space-y-2">
-                            <div>
-                              <strong>📝 Jednoduchý postup (STAČÍ KLIKNÚŤ):</strong>
-                              <ol className="mt-1 ml-4 list-decimal space-y-1">
-                                <li>Klikni na modré tlačidlo <strong>"Aktivovať bota"</strong> vyššie 👆</li>
-                                <li>Status sa zmení na "active" v databáze</li>
-                                <li>Discord Bot Service (ktorý už beží) automaticky deteguje zmenu</li>
-                                <li>Bot sa pripojí k Discord API (môže to trvať 1-5 minút, service kontroluje každých 5 minút)</li>
-                                <li>Stránka sa automaticky obnoví každých 10 sekúnd a zobrazí "✅ Bot je aktívny"</li>
-                              </ol>
-                              <p className="mt-2 text-xs text-muted-foreground italic">
-                                💡 Tip: Ak chceš rýchlejšie pripojenie, reštartuj service v termináli (Ctrl+C a potom znovu npm run dev)
-                              </p>
-                            </div>
-                            <div className="mt-2 pt-2 border-t">
-                              <strong>🔧 Ak service nebeží:</strong>
-                              <pre className="mt-1 p-2 bg-muted rounded text-xs overflow-x-auto">
-{`cd discord-bot-service
-npm run dev`}
-                              </pre>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Basic Settings */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Základné nastavenia</CardTitle>
-                    <CardDescription>
-                      Jazyk, časové pásmo, rate limit a ďalšie základné konfigurácie
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="botLanguage">Jazyk bota</Label>
-                        <Select value={botLanguage} onValueChange={setBotLanguage}>
-                          <SelectTrigger id="botLanguage">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="SK">Slovenčina</SelectItem>
-                            <SelectItem value="CZ">Čeština</SelectItem>
-                            <SelectItem value="EN">Angličtina</SelectItem>
-                            <SelectItem value="NO">Nórčina</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {responseMode === "ai" && (
-                        <div className="space-y-2">
-                          <Label htmlFor="maxResponseTokens">Maximálna dĺžka odpovede (tokeny)</Label>
-                          <Input
-                            id="maxResponseTokens"
-                            type="number"
-                            min="50"
-                            max="1000"
-                            value={maxResponseTokens}
-                            onChange={(e) => setMaxResponseTokens(parseInt(e.target.value) || 300)}
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            Maximálny počet tokenov v AI odpovedi (300 = cca 225 slov)
-                          </p>
-                        </div>
-                      )}
-
-                    </div>
-                  </CardContent>
-                </Card>
 
                 {/* AI Settings - len ak je AI enabled (responseMode === "ai") */}
                 {responseMode === "ai" && (
