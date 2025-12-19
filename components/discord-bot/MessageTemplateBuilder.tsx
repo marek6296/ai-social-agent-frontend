@@ -127,7 +127,7 @@ export function MessageTemplateBuilder({
     updateEmbed({ fields: [...fields, { name: "", value: "", inline: false }] });
   };
 
-  const updateField = (index: number, updates: Partial<MessagePage["embed"]["fields"][0]>) => {
+  const updateField = (index: number, updates: Partial<{ name: string; value: string; inline?: boolean }>) => {
     const fields = [...(currentPage.embed.fields || [])];
     fields[index] = { ...fields[index], ...updates };
     updateEmbed({ fields });
