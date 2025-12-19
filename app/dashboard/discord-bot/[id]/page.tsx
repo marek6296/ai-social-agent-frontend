@@ -432,14 +432,15 @@ export default function DiscordBotSettingsPage() {
   return (
     <div>
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-4 md:mb-8">
             <Button
               variant="ghost"
               onClick={() => router.push("/dashboard/discord-bot")}
-              className="mb-4"
+              className="mb-2 md:mb-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Späť na Discord botov
+              <span className="hidden sm:inline">Späť na Discord botov</span>
+              <span className="sm:hidden">Späť</span>
             </Button>
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
