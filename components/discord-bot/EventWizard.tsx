@@ -35,6 +35,7 @@ export interface EventConfig {
   // KROK 2: Detaily
   maxPlayers: number;
   voiceChannel: string; // Voice channel name or link
+  guildId: string; // Server ID
   channelId: string; // Where to post the event
   
   // KROK 3: Buttons (RSVP)
