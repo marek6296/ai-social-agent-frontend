@@ -720,7 +720,6 @@ export default function EventsPage() {
                     </div>
                     )}
                     </div>
-                  </div>
                 </CardContent>
               )}
             </Card>
