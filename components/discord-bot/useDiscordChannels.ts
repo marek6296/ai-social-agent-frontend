@@ -160,11 +160,13 @@ export function useDiscordChannels(botId: string | null, guildId: string | null)
         
         if (Array.isArray(channelsArray)) {
           console.log(`Caching ${channelsArray.length} channels for ${cacheKey}`); // Debug log
-          // Cache the result
-          channelsCache.set(cacheKey, {
-            data: channelsArray,
-            timestamp: Date.now(),
-          });
+          // Only cache if we have data (empty arrays should not be cached to allow retries)
+          if (channelsArray.length > 0) {
+            channelsCache.set(cacheKey, {
+              data: channelsArray,
+              timestamp: Date.now(),
+            });
+          }
           return channelsArray; // Return the array so promise resolves with it
         } else {
           console.error("Invalid channels data format:", data);
