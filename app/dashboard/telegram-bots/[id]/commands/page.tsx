@@ -422,16 +422,14 @@ export default function TelegramBotCommandsPage() {
                           <Code className="h-5 w-5" />
                           {command.command_trigger}
                         </CardTitle>
-                        <CardDescription className="mt-2">
-                          {command.command_type === "text" && (
-                            <div>
-                              <p className="text-sm font-medium mb-1">Odpoveď:</p>
-                              <p className="text-xs bg-muted p-2 rounded whitespace-pre-wrap">
-                                {command.response_text || "—"}
-                              </p>
+                        {command.command_type === "text" && (
+                          <div className="mt-2 text-sm text-muted-foreground">
+                            <p className="font-medium mb-1">Odpoveď:</p>
+                            <div className="text-xs bg-muted p-2 rounded whitespace-pre-wrap">
+                              {command.response_text || "—"}
                             </div>
-                          )}
-                        </CardDescription>
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <Button
