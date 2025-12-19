@@ -1,0 +1,1 @@
+{"version":3,"file":"commandHandler.d.ts","sourceRoot":"","sources":["../src/commandHandler.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,MAAM,UAAU,CAAC;AACnC,OAAO,EAAE,QAAQ,EAAE,MAAM,UAAU,CAAC;AACpC,OAAO,EAAE,WAAW,EAAE,MAAM,SAAS,CAAC;AAUtC,wBAAsB,cAAc,CAClC,GAAG,EAAE,OAAO,EACZ,GAAG,EAAE,WAAW,EAChB,QAAQ,EAAE,QAAQ,GACjB,OAAO,CAAC,IAAI,CAAC,CAoMf"}

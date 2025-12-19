@@ -1,0 +1,31 @@
+{
+  "name": "telegram-bot-service",
+  "version": "1.0.0",
+  "description": "Telegram bot backend service for AI Social Agent",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "ai",
+    "chatbot"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.88.0",
+    "telegraf": "^4.16.3",
+    "dotenv": "^16.6.1",
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
+
