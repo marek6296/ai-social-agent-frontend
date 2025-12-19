@@ -99,3 +99,5 @@ CREATE POLICY "Admin can update all profiles"
 -- V aplikácii by to malo fungovať správne, pretože používateľ je prihlásený.
 
 
+
+

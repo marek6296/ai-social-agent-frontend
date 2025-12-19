@@ -46,7 +46,18 @@ export default function SettingsPage() {
 
       const { data: userData, error: userError } = await supabase.auth.getUser();
 
-      if (userError || !userData.user) {
+      if (userError) {
+        // Handle refresh token errors
+        if (userError.message?.includes("Refresh Token") || userError.message?.includes("refresh_token")) {
+          await supabase.auth.signOut();
+          router.push("/login");
+          return;
+        }
+        router.push("/login");
+        return;
+      }
+
+      if (!userData.user) {
         router.push("/login");
         return;
       }

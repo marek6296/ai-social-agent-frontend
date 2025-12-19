@@ -1,0 +1,32 @@
+{
+  "name": "discord-bot-service",
+  "version": "1.0.0",
+  "description": "Discord bot backend service for AI Social Agent",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "ai",
+    "chatbot"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.88.0",
+    "discord.js": "^14.25.1",
+    "dotenv": "^16.6.1",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
+

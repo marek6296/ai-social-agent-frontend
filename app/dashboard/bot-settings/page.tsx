@@ -131,11 +131,14 @@ export default function BotSettingsPage() {
     setSuccess(null);
 
     try {
+      // Obmedzíme popis na maximálne 450 znakov
+      const trimmedDescription = description ? description.slice(0, 450).trim() : null;
+      
       const payload: any = {
         user_id: user.id,
         company_name: companyName || null,
         bot_name: botName || null,
-        description: description || null,
+        description: trimmedDescription,
         tone,
         show_lead_form_enabled: captureLeadsEnabled,
         widget_position: widgetPosition,
@@ -314,12 +317,13 @@ export default function BotSettingsPage() {
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                    maxLength={450}
                     rows={16}
                     className="min-h-[400px] resize-y"
                     placeholder='Napr. "Si AI chatbot s názvom Jano pre firmu Detox."'
                   />
                   <p className="text-xs text-muted-foreground">
-                    Čím konkrétnejší popis, tým lepšie vie AI chápať, čo má komunikovať.
+                    Čím konkrétnejší popis, tým lepšie vie AI chápať, čo má komunikovať. Max. 450 znakov ({description.length}/450).
                   </p>
                 </div>
 

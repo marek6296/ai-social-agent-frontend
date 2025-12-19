@@ -368,6 +368,7 @@ Pravidlá:
         model: "gpt-4o-mini",
         messages: messagesForAPI,
         temperature: 0.4,
+        max_tokens: 450,
       }),
     });
 

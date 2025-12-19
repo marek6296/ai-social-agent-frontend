@@ -52,3 +52,5 @@ WHERE tablename = 'users_profile';
 -- 4. rowsecurity by malo byť 'true'
 
 
+
+

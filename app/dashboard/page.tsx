@@ -9,21 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedPage } from "@/components/AnimatedPage";
-import { OnboardingModal } from "@/components/OnboardingModal";
 import {
-  Settings,
-  MessageSquare,
-  BarChart3,
-  Users,
-  FileText,
-  Code,
-  User,
-  LogOut,
+  Globe,
+  MessageCircle,
+  Send,
+  Instagram,
   ArrowRight,
-  Sparkles,
+  LogOut,
   Zap,
-  TrendingUp,
   Shield,
+  Sparkles,
 } from "lucide-react";
 
 type UserProfile = {
@@ -33,6 +28,59 @@ type UserProfile = {
   lastName?: string;
 };
 
+const SUPER_ADMIN_ID = "faeb1920-35fe-47be-a169-1393591cc3e4";
+
+const products = [
+  {
+    id: "web-bot",
+    title: "AI Chatbot pre Web",
+    description: "Inteligentný chatbot pre tvoj web, ktorý odpovedá na otázky návštevníkov a zachytáva leady.",
+    icon: Globe,
+    href: "/dashboard/web-bot",
+    color: "text-emerald-500",
+    bgColor: "bg-emerald-500/10",
+    hoverColor: "hover:bg-emerald-500/20",
+    borderColor: "border-emerald-500/20",
+    gradient: "from-emerald-500/10 to-emerald-500/5",
+  },
+  {
+    id: "discord-bot",
+    title: "Discord Chatbot",
+    description: "Automatizuj komunikáciu na tvojom Discord serveri s AI chatbotom, ktorý pomáha používateľom.",
+    icon: MessageCircle,
+    href: "/dashboard/discord-bot",
+    color: "text-indigo-500",
+    bgColor: "bg-indigo-500/10",
+    hoverColor: "hover:bg-indigo-500/20",
+    borderColor: "border-indigo-500/20",
+    gradient: "from-indigo-500/10 to-indigo-500/5",
+  },
+  {
+    id: "telegram-bot",
+    title: "Telegram Chatbot",
+    description: "Vytvor Telegram bota, ktorý komunikuje s používateľmi a poskytuje automatizované odpovede.",
+    icon: Send,
+    href: "/dashboard/telegram-bot",
+    color: "text-blue-500",
+    bgColor: "bg-blue-500/10",
+    hoverColor: "hover:bg-blue-500/20",
+    borderColor: "border-blue-500/20",
+    gradient: "from-blue-500/10 to-blue-500/5",
+  },
+  {
+    id: "instagram-bot",
+    title: "Instagram Chatbot",
+    description: "Automatizuj odpovede na Instagram DMs a komentáre s pomocou AI chatbota.",
+    icon: Instagram,
+    href: "/dashboard/instagram-bot",
+    color: "text-pink-500",
+    bgColor: "bg-pink-500/10",
+    hoverColor: "hover:bg-pink-500/20",
+    borderColor: "border-pink-500/20",
+    gradient: "from-pink-500/10 to-pink-500/5",
+  },
+];
+
 const cardSpring = (delay: number) => ({
   type: "spring" as const,
   stiffness: 100,
@@ -40,41 +88,29 @@ const cardSpring = (delay: number) => ({
   delay,
 });
 
-const SUPER_ADMIN_ID = "faeb1920-35fe-47be-a169-1393591cc3e4";
-
-export default function DashboardPage() {
+export default function ProductHubPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [plan, setPlan] = useState<string>("starter");
-
-  // Uchovanie scroll pozície pri odchode z dashboardu (návrat späť ťa nehodí na vrch)
-  useEffect(() => {
-    const saved = sessionStorage.getItem("dashboard-scroll");
-    if (saved) {
-      const y = parseInt(saved, 10);
-      if (!Number.isNaN(y)) {
-        requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "instant" as ScrollBehavior }));
-      }
-    }
-
-    const saveScroll = () => {
-      sessionStorage.setItem("dashboard-scroll", String(window.scrollY || 0));
-    };
-
-    window.addEventListener("beforeunload", saveScroll);
-    return () => {
-      saveScroll();
-      window.removeEventListener("beforeunload", saveScroll);
-    };
-  }, []);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
       const { data, error } = await supabase.auth.getUser();
 
-      if (error || !data.user) {
+      if (error) {
+        // Handle refresh token errors
+        if (error.message?.includes("Refresh Token") || error.message?.includes("refresh_token")) {
+          await supabase.auth.signOut();
+          router.push("/login");
+          return;
+        }
+        router.push("/login");
+        return;
+      }
+
+      if (!data.user) {
         router.push("/login");
         return;
       }
@@ -88,8 +124,7 @@ export default function DashboardPage() {
         lastName: user_metadata?.lastName,
       });
 
-      // Načítanie admin práv a plánu z users_profile
-      // Použijeme API endpoint ako primárny spôsob (server-side má lepší prístup)
+      // Načítanie plánu a admin práv (rovnaká logika ako v web-bot dashboarde)
       let profileData = null;
       let profileError = null;
       
@@ -101,7 +136,6 @@ export default function DashboardPage() {
           if (apiData.profileData) {
             profileData = apiData.profileData;
           } else if (apiData.plan) {
-            // Ak API vráti aspoň plán, vytvoríme minimálny objekt
             profileData = {
               plan: apiData.plan,
               is_admin: apiData.isAdmin || false
@@ -117,92 +151,28 @@ export default function DashboardPage() {
         for (let attempt = 0; attempt < 3; attempt++) {
           const result = await supabase
             .from("users_profile")
-            .select("is_admin, plan")
+            .select("plan, is_admin")
             .eq("id", id)
             .maybeSingle();
           
           profileData = result.data;
           profileError = result.error;
-
-          // Debug log (len ak je error)
-          if (profileError && typeof window !== 'undefined') {
-            console.warn(`Failed to load profile from DB (attempt ${attempt + 1}):`, {
-              userId: id,
-              error: profileError?.message || profileError?.code,
-            });
-          }
-
-          // Ak máme dáta alebo je to posledný pokus, skonči
-          if (profileData || attempt === 2) {
-            break;
-          }
-
-          // Počkaj 200ms pred ďalším pokusom
+          if (profileData || attempt === 2) break;
           await new Promise(resolve => setTimeout(resolve, 200));
-        }
-      }
-
-      // Error je už logovaný v debug logoch vyššie
-
-      // Ak záznam neexistuje, vytvor ho s default hodnotami
-      if (!profileData && !profileError) {
-        const { error: createError } = await supabase
-          .from("users_profile")
-          .insert({
-            id,
-            plan: "starter",
-            is_active: true,
-            is_admin: false,
-            credits_used_this_month: 0,
-            last_credit_reset: new Date().toISOString(),
-          });
-
-        if (createError) {
-          console.error("Failed to create user profile:", createError);
-        } else {
-          // Načítaj znovu po vytvorení
-          const { data: newProfileData } = await supabase
-            .from("users_profile")
-            .select("is_admin, plan")
-            .eq("id", id)
-            .maybeSingle();
-
-          const userIsAdmin = newProfileData?.is_admin === true || id === SUPER_ADMIN_ID;
-          const isSuperAdmin = id === SUPER_ADMIN_ID;
-          setIsAdmin(userIsAdmin);
-          const finalPlan = (userIsAdmin || isSuperAdmin) ? "unlimited" : (newProfileData?.plan || "starter");
-          setPlan(finalPlan);
-          setLoading(false);
-          return;
         }
       }
 
       const userIsAdmin = profileData?.is_admin === true || id === SUPER_ADMIN_ID;
       const isSuperAdmin = id === SUPER_ADMIN_ID;
+      
       setIsAdmin(userIsAdmin);
       
-      // Pre admina/super admina zobraz "Unlimited", inak skutočný plán
       let finalPlan = "starter";
-      
       if (userIsAdmin || isSuperAdmin) {
-        // Admin/Super Admin má vždy unlimited
         finalPlan = "unlimited";
-      } else if (profileData) {
-        // Máme dáta z DB - použij plán z DB (aj keď je null, použijeme starter)
-        const planFromDB = profileData.plan;
-        if (planFromDB && typeof planFromDB === 'string' && planFromDB.trim() !== '') {
-          finalPlan = planFromDB.toLowerCase();
-        } else {
-          // Plán je null alebo prázdny - použijeme starter
-          finalPlan = "starter";
-        }
-      } else {
-        // Záznam neexistuje alebo je error - použijeme default "starter"
-        finalPlan = "starter";
+      } else if (profileData?.plan && typeof profileData.plan === 'string' && profileData.plan.trim() !== '') {
+        finalPlan = profileData.plan.toLowerCase();
       }
-      
-      // Plan is set below
-      
       setPlan(finalPlan);
 
       setLoading(false);
@@ -211,64 +181,13 @@ export default function DashboardPage() {
     loadUser();
   }, [router]);
 
-
-  // Refresh plánu pri focus na okno (ak admin zmenil plán)
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const handleFocus = async () => {
-      // Retry logika aj pre focus refresh
-      let profileData = null;
-      for (let attempt = 0; attempt < 3; attempt++) {
-        const result = await supabase
-          .from("users_profile")
-          .select("plan, is_admin")
-          .eq("id", user.id)
-          .maybeSingle();
-        
-        profileData = result.data;
-        if (profileData || attempt === 2) break;
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-
-      if (profileData) {
-        const userIsAdmin = profileData.is_admin === true || user.id === SUPER_ADMIN_ID;
-        const isSuperAdmin = user.id === SUPER_ADMIN_ID;
-        
-        let newPlan = "starter";
-        if (userIsAdmin || isSuperAdmin) {
-          newPlan = "unlimited";
-        } else if (profileData.plan && typeof profileData.plan === 'string' && profileData.plan.trim() !== '') {
-          newPlan = profileData.plan.toLowerCase();
-        }
-        
-        if (newPlan !== plan) {
-          console.log("Focus refresh - updating plan:", { oldPlan: plan, newPlan });
-          setPlan(newPlan);
-        }
-      }
-    };
-
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [user?.id, plan]);
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/");
   };
 
-  // Zobrazíme len prvé meno (bez priezviska)
-  // Ak nie je firstName, skúsime získať prvé meno z emailu alebo použijeme fallback
-  const getFirstNameFromEmail = (email: string | null | undefined) => {
-    if (!email) return null;
-    const emailPart = email.split("@")[0];
-    const firstPart = emailPart.split(".")[0];
-    return firstPart.charAt(0).toUpperCase() + firstPart.slice(1);
-  };
-  
   const displayName = user?.firstName?.trim() || 
-                      getFirstNameFromEmail(user?.email) || 
+                      user?.email?.split("@")[0] || 
                       "Používateľ";
 
   if (loading) {
@@ -281,207 +200,114 @@ export default function DashboardPage() {
             transition={{ duration: 0.3 }}
             className="text-center"
           >
-            <div className="h-8 w-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" style={{ animation: 'spin 1s linear infinite' }} />
-            <p className="text-sm text-muted-foreground">Načítavam tvoj dashboard…</p>
+            <div className="h-8 w-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">Načítavam produkty…</p>
           </motion.div>
         </div>
       </AnimatedPage>
     );
   }
 
-  const dashboardCards = [
-    {
-      title: "Nastavenia chatbota",
-      description: "Uprav meno bota, firmu, popis a štýl komunikácie, ktorý bude používať pri odpovediach.",
-      href: "/dashboard/bot-settings",
-      icon: Settings,
-      color: "text-emerald-500",
-      bgColor: "bg-emerald-500/10",
-      hoverColor: "hover:bg-emerald-500/20",
-    },
-    {
-      title: "FAQ",
-      description: "Pridaj, uprav alebo vymaž otázky a odpovede, na ktoré sa tvoj bot bude odvolávať.",
-      href: "/dashboard/faq",
-      icon: MessageSquare,
-      color: "text-cyan-500",
-      bgColor: "bg-cyan-500/10",
-      hoverColor: "hover:bg-cyan-500/20",
-    },
-    {
-      title: "Konverzácie",
-      description: "Prehľad všetkých konverzácií, ktoré tvoj bot viedol s návštevníkmi tvojho webu.",
-      href: "/dashboard/conversations",
-      icon: FileText,
-      color: "text-purple-500",
-      bgColor: "bg-purple-500/10",
-      hoverColor: "hover:bg-purple-500/20",
-    },
-    {
-      title: "Analytics",
-      description: "Štatistiky a metriky o tom, ako často a kedy ľudia používajú tvojho chatbota.",
-      href: "/dashboard/analytics",
-      icon: BarChart3,
-      color: "text-amber-500",
-      bgColor: "bg-amber-500/10",
-      hoverColor: "hover:bg-amber-500/20",
-    },
-    {
-      title: "Leady",
-      description: "Kontakty, ktoré tvoj bot zachytil cez lead form – email, meno a poznámka.",
-      href: "/dashboard/leads",
-      icon: Users,
-      color: "text-pink-500",
-      bgColor: "bg-pink-500/10",
-      hoverColor: "hover:bg-pink-500/20",
-    },
-    {
-      title: "Môj bot",
-      description: "Otestuj svojho chatbota priamo tu – presne tak, ako ho uvidia návštevníci tvojho webu.",
-      href: "/dashboard/my-bot",
-      icon: Sparkles,
-      color: "text-indigo-500",
-      bgColor: "bg-indigo-500/10",
-      hoverColor: "hover:bg-indigo-500/20",
-    },
-    {
-      title: "Môj účet a nastavenia",
-      description: "Spravuj svoj profil, heslo a API kľúče pre integrácie.",
-      href: "/dashboard/settings",
-      icon: User,
-      color: "text-blue-500",
-      bgColor: "bg-blue-500/10",
-      hoverColor: "hover:bg-blue-500/20",
-    },
-    {
-      title: "Využitie a limity",
-      description: "Sleduj, koľko konverzácií tvoj bot spracoval a koľko ti zostáva do limitu.",
-      href: "/dashboard/usage",
-      icon: TrendingUp,
-      color: "text-orange-500",
-      bgColor: "bg-orange-500/10",
-      hoverColor: "hover:bg-orange-500/20",
-    },
-    ...(isAdmin ? [{
-      title: "Admin rozhranie",
-      description: "Správa všetkých užívateľov, ich plánov, kreditov a manuálne blokovanie/aktivovanie účtov.",
-      href: "/dashboard/admin",
-      icon: Shield,
-      color: "text-red-500",
-      bgColor: "bg-red-500/10",
-      hoverColor: "hover:bg-red-500/20",
-    }] : []),
-  ];
-
   return (
     <AnimatedPage>
-      <OnboardingModal />
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 space-y-6 sm:space-y-8">
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
           {/* Header */}
           <motion.header
-            className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-8 border-b"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            className="mb-12"
           >
-            {/* Mobile: Plan badge and logout button in top right */}
-            <motion.div
-              className="absolute top-0 right-0 flex items-center gap-2 md:hidden z-10"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <Badge 
-                key={`plan-${plan}`}
-                variant="outline" 
-                className="flex gap-1.5 px-2 py-1 text-xs capitalize"
-              >
-                <Zap className="h-3 w-3" />
-                <span className="font-medium">
-                  {plan === "unlimited" ? "Unlimited" : plan || "starter"}
-                </span>
-              </Badge>
-              <Button variant="outline" onClick={handleLogout} size="sm" className="h-8 px-2">
-                <LogOut className="h-3.5 w-3.5" />
-              </Button>
-            </motion.div>
-
-            <motion.div
-              className="flex items-center gap-4 pr-20 md:pr-0"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground flex items-center justify-center font-bold text-xl shadow-lg shadow-primary/20 relative">
-                {loading ? (
-                  <div className="h-6 w-6 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                ) : (
-                  "AI"
-                )}
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  {user?.id === SUPER_ADMIN_ID && (
-                    <Badge variant="outline" className="gap-1.5 border-purple-500/50 text-purple-500 text-xs">
-                      <Shield className="h-3 w-3" />
-                      Super Admin
-                    </Badge>
-                  )}
-                  {isAdmin && user?.id !== SUPER_ADMIN_ID && (
-                    <Badge variant="outline" className="gap-1.5 border-red-500/50 text-red-500 text-xs">
-                      <Shield className="h-3 w-3" />
-                      Admin
-                    </Badge>
-                  )}
-                </div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                  Ahoj {displayName}
+            <div className="flex items-center justify-between flex-wrap gap-6">
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                {/* 
+                  UPRAVITEĽNÉ HODNOTY - Riadok 214:
+                  mb-1 = vzdialenosť medzi nadpisom a podnadpisom
+                  Možnosti: mb-0.5, mb-1, mb-1.5, mb-2, mb-3
+                */}
+                <h1 className="text-5xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent tracking-tight leading-tight">
+                  Vitaj späť, {displayName}! 👋
                 </h1>
-                <p className="text-muted-foreground mt-2">
-                  Tu spravuješ svoj firemný AI chatbot – nastavenia, FAQ, históriu konverzácií a analýzy.
-                </p>
               </div>
-            </motion.div>
-            
-            {/* Desktop: Plan badge and logout button */}
-            <motion.div
-              className="hidden md:flex items-center gap-3 justify-end"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <Badge 
-                key={`plan-${plan}`}
-                variant="outline" 
-                className="flex gap-2 px-3 py-1.5 capitalize"
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="flex items-center gap-3 flex-shrink-0"
               >
-                <Zap className="h-3.5 w-3.5" />
-                <span className="font-medium">
-                  {plan === "unlimited" ? "Unlimited" : `Chatbot plán · ${plan || "starter"}`}
-                </span>
-              </Badge>
-              <Button variant="outline" onClick={handleLogout} size="sm">
-                <LogOut className="h-4 w-4 mr-2" />
-                Odhlásiť sa
-              </Button>
-            </motion.div>
+                <Badge 
+                  variant="outline" 
+                  className="flex gap-2 px-3 py-1.5 capitalize"
+                >
+                  <Zap className="h-3.5 w-3.5" />
+                  <span className="font-medium">
+                    {plan === "unlimited" ? "Unlimited" : `${plan || "starter"} plán`}
+                  </span>
+                </Badge>
+                {user?.id === SUPER_ADMIN_ID && (
+                  <Link href="/dashboard/admin">
+                    <Badge 
+                      variant="outline" 
+                      className="flex gap-2 px-3 py-1.5 border-purple-500/50 text-purple-500 cursor-pointer hover:bg-purple-500/10 transition-colors"
+                    >
+                      <Shield className="h-3.5 w-3.5" />
+                      <span className="font-medium">Super Admin</span>
+                    </Badge>
+                  </Link>
+                )}
+                {isAdmin && user?.id !== SUPER_ADMIN_ID && (
+                  <Link href="/dashboard/admin">
+                    <Badge 
+                      variant="outline" 
+                      className="flex gap-2 px-3 py-1.5 border-red-500/50 text-red-500 cursor-pointer hover:bg-red-500/10 transition-colors"
+                    >
+                      <Shield className="h-3.5 w-3.5" />
+                      <span className="font-medium">Admin</span>
+                    </Badge>
+                  </Link>
+                )}
+                <Button variant="outline" onClick={handleLogout} size="sm">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Odhlásiť sa
+                </Button>
+              </motion.div>
+            </div>
           </motion.header>
 
-          {/* Dashboard Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {dashboardCards.map((card, index) => (
+          {/* Product Selection Title */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-center mb-12"
+          >
+            {/* 
+              UPRAVITEĽNÉ HODNOTY - Riadok 283:
+              text-3xl = veľkosť textu (možnosti: text-2xl, text-3xl, text-4xl, text-5xl)
+              font-medium = hrúbka (možnosti: font-normal, font-medium, font-semibold, font-bold)
+              mb-12 = vzdialenosť od kariet (možnosti: mb-8, mb-10, mb-12, mb-16)
+            */}
+            <p className="text-muted-foreground text-3xl font-medium">
+              Vyber si produkt, ktorý chceš spravovať
+            </p>
+          </motion.div>
+
+          {/* Product Cards */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {products.map((product, index) => (
               <motion.div
-                key={card.href}
+                key={product.id}
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={cardSpring(index * 0.05)}
+                transition={cardSpring(index * 0.1)}
                 whileHover={{ y: -4, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                className="flex"
               >
-                <Card className="group relative h-full cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:border-primary/50 overflow-hidden border-border/50">
-                  {/* Gradient overlay on hover */}
-                  <div className={`absolute inset-0 bg-gradient-to-br from-transparent to-transparent group-hover:from-primary/5 group-hover:to-primary/10 transition-all duration-500 pointer-events-none`} />
+                <Card className="group relative w-full flex flex-col h-full cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:border-primary/50 overflow-hidden border-border/50">
+                  {/* Gradient overlay */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${product.gradient} transition-all duration-500 pointer-events-none opacity-0 group-hover:opacity-100`} />
                   
                   {/* Shine effect */}
                   <motion.div
@@ -489,77 +315,57 @@ export default function DashboardPage() {
                     transition={{ duration: 0.7 }}
                   />
                   
-                  <CardHeader className="relative z-10">
-                    <div className={`h-12 w-12 rounded-xl ${card.bgColor} ${card.hoverColor} flex items-center justify-center mb-4 transition-colors shadow-lg`}>
-                      <card.icon className={`h-6 w-6 ${card.color}`} />
+                  <CardHeader className="relative z-10 pb-4 flex-1 flex flex-col">
+                    <div className={`h-16 w-16 rounded-2xl ${product.bgColor} ${product.hoverColor} flex items-center justify-center mb-6 transition-colors shadow-lg border ${product.borderColor}`}>
+                      <product.icon className={`h-8 w-8 ${product.color}`} />
                     </div>
-                    <CardTitle className="text-lg mb-2">{card.title}</CardTitle>
-                    <CardDescription className="text-sm leading-relaxed">{card.description}</CardDescription>
+                    <CardTitle className="text-2xl mb-3">{product.title}</CardTitle>
+                    <CardDescription className="text-base leading-relaxed flex-1">
+                      {product.description}
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="relative z-10">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-primary group-hover:gap-3 transition-all">
-                      <span>Otvoriť</span>
-                      <motion.span
-                        animate={{ x: [0, 4, 0] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                      >
-                        <ArrowRight className="h-4 w-4" />
-                      </motion.span>
-                    </div>
+                  <CardContent className="relative z-10 pt-0 mt-auto">
+                    <Button
+                      asChild
+                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                      variant="outline"
+                    >
+                      <Link href={product.href} className="flex items-center justify-center gap-2">
+                        <span>Otvoriť</span>
+                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </Link>
+                    </Button>
                   </CardContent>
-                  <Link
-                    href={card.href}
-                    className="absolute inset-0 z-20"
-                    aria-label={card.title}
-                  />
                 </Card>
               </motion.div>
             ))}
           </div>
 
-          {/* Embed Code Section */}
+          {/* Info Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
+            className="mt-12"
           >
             <Card className="border-border/50 bg-gradient-to-br from-card to-card/50">
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Code className="h-5 w-5 text-primary" />
+                    <Sparkles className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <CardTitle>Embed kód pre tvoj web</CardTitle>
+                    <CardTitle>Multi-produktová platforma</CardTitle>
                     <CardDescription>
-                      Skopíruj tento kód a vlož ho do HTML svojho webu, aby sa chatbot zobrazoval.
+                      Spravuj všetky svoje AI produkty z jedného miesta
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="relative group">
-                  <pre className="bg-slate-950/50 border border-slate-800 p-4 rounded-lg text-xs overflow-x-auto font-mono backdrop-blur-sm">
-                    <code className="text-slate-300">
-                      {`<script src="https://ai-social-agent-frontend.vercel.app/embed.js" data-bot-id="${user?.id ?? "TVOJ_BOT_ID"}"></script>`}
-                    </code>
-                  </pre>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        `<script src="https://ai-social-agent-frontend.vercel.app/embed.js" data-bot-id="${user?.id ?? "TVOJ_BOT_ID"}"></script>`
-                      );
-                    }}
-                  >
-                    Kopírovať
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-3 flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  Vlož tento kód pred uzatvárajúci tag <code className="text-xs bg-muted px-1 py-0.5 rounded">{"</body>"}</code> na tvojej webovej stránke
+                <p className="text-sm text-muted-foreground">
+                  Každý produkt má svoj vlastný dashboard s nastaveniami, analýzami a konverzáciami. 
+                  Vyber si produkt, ktorý chceš spravovať, a začni konfigurovať svojho AI asistenta.
                 </p>
               </CardContent>
             </Card>

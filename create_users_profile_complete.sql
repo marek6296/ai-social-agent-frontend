@@ -73,3 +73,5 @@ ON CONFLICT (id) DO UPDATE SET is_admin = true;
 -- WHERE id = auth.uid();
 
 
+
+

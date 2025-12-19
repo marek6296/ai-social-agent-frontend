@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { motion, AnimatePresence } from "framer-motion";
 
 type Message = {
   id: number;
@@ -387,32 +386,23 @@ export function ChatWidget({ ownerUserId }: { ownerUserId?: string }) {
 
   return (
     <>
-      {/* Chat okno – nechávame stále v DOM, len meníme viditeľnosť (kvôli Safari blikaniu) */}
-      <motion.div
-        initial={false}
-        animate={
-          open
-            ? { opacity: 1, y: 0, pointerEvents: "auto" }
-            : { opacity: 0, y: 8, pointerEvents: "none" }
-        }
-        transition={{ duration: 0.18, ease: "easeOut" }}
-        className={`fixed bottom-5 ${positionClass} z-50 w-[340px] sm:w-[400px] rounded-3xl border border-white/10 shadow-2xl flex flex-col overflow-hidden`}
+      {/* Chat okno – jednoduchá CSS transition pre stabilitu bez blikania */}
+      <div
+        className={`fixed bottom-5 ${positionClass} z-50 w-[340px] sm:w-[400px] rounded-3xl border border-white/10 shadow-2xl flex flex-col overflow-hidden transition-all duration-200 ease-out`}
         style={{
+          opacity: open ? 1 : 0,
+          transform: open ? 'translateY(0) translateZ(0)' : 'translateY(10px) translateZ(0)',
+          pointerEvents: open ? "auto" : "none",
+          visibility: open ? "visible" : "hidden",
           background: `linear-gradient(135deg, ${widgetBackgroundColor || "#0a0f1e"} 0%, ${widgetBackgroundColor || "#0f172a"} 100%)`,
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
           boxShadow: `0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.1)`,
-          willChange: "transform, opacity",
+          willChange: "opacity, transform",
           WebkitBackfaceVisibility: "hidden",
           backfaceVisibility: "hidden",
-          WebkitTransform: "translateZ(0)",
-          transform: "translateZ(0)",
-          WebkitPerspective: "1000px",
-          perspective: "1000px",
-          WebkitTapHighlightColor: "transparent",
-          pointerEvents: open ? "auto" : "none",
         }}
-      >
+        >
           {/* Header */}
           <div 
             className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-gradient-to-r from-white/5 to-transparent backdrop-blur-sm"
@@ -646,31 +636,23 @@ export function ChatWidget({ ownerUserId }: { ownerUserId?: string }) {
               </div>
             )}
           </div>
-        </motion.div>
+      </div>
 
-      {/* Tlačidlo – nechávame stále, len animujeme viditeľnosť */}
-      <motion.button
-        key="chat-button"
+      {/* Tlačidlo – jednoduchá CSS transition pre stabilitu bez blikania */}
+      <button
         type="button"
         onClick={() => setOpen(true)}
-        initial={false}
-        animate={
-          open
-            ? { opacity: 0, y: 6, pointerEvents: "none" }
-            : { opacity: 1, y: 0, pointerEvents: "auto" }
-        }
-        transition={{ duration: 0.16, ease: "easeOut" }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className={`fixed bottom-5 ${positionClass} z-40 h-14 px-5 rounded-full shadow-2xl flex items-center gap-3 text-sm font-semibold transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] backdrop-blur-sm border border-white/10`}
+        className={`fixed bottom-5 ${positionClass} z-40 h-14 px-5 rounded-full shadow-2xl flex items-center gap-3 text-sm font-semibold transition-all duration-200 ease-out hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] backdrop-blur-sm border border-white/10 hover:scale-105 active:scale-95`}
         style={{
+          opacity: !open ? 1 : 0,
+          transform: !open ? 'translateY(0) translateZ(0)' : 'translateY(5px) translateZ(0)',
+          pointerEvents: !open ? "auto" : "none",
+          visibility: !open ? "visible" : "hidden",
           background: `linear-gradient(135deg, rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, 0.95), rgba(${Math.min(primaryRgb.r + 40, 255)}, ${Math.min(primaryRgb.g + 40, 255)}, ${Math.min(primaryRgb.b + 40, 255)}, 0.95))`,
           color: getContrastColor(widgetPrimaryColor || "#10b981"),
-          willChange: "transform, opacity",
+          willChange: "opacity, transform",
           WebkitBackfaceVisibility: "hidden",
           backfaceVisibility: "hidden",
-          WebkitTransform: "translateZ(0)",
-          transform: "translateZ(0)",
           WebkitTapHighlightColor: "transparent",
         }}
       >
@@ -698,7 +680,7 @@ export function ChatWidget({ ownerUserId }: { ownerUserId?: string }) {
           </span>
         )}
         <span className="text-white drop-shadow-sm">Opýtať sa chatbota</span>
-      </motion.button>
+      </button>
     </>
   );
 }

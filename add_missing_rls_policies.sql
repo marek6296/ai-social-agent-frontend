@@ -12,3 +12,5 @@ CREATE POLICY IF NOT EXISTS "Users can insert their own profile"
   WITH CHECK (auth.uid() = id);
 
 
+
+

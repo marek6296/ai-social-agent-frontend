@@ -33,3 +33,5 @@ ORDER BY created_at DESC;
 -- - Admin/Super Admin účty majú unlimited kredity
 
 
+
+

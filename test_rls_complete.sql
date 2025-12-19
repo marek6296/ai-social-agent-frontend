@@ -72,3 +72,5 @@ ORDER BY created_at DESC;
 --    - Všetky dotazy by mali vrátiť dáta
 
 
+
+
