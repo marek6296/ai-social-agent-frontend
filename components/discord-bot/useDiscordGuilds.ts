@@ -155,7 +155,10 @@ export function useDiscordGuilds(botId: string | null) {
 
     const promise = loadGuilds()
       .then((guildsArray) => {
-        console.log("Promise resolved with guilds:", guildsArray?.length || 0); // Debug log
+        console.log("Promise resolved with guilds:", guildsArray?.length || 0, guildsArray); // Debug log
+        if (!guildsArray || guildsArray.length === 0) {
+          console.warn("Warning: Received empty guilds array from API");
+        }
         setGuilds(guildsArray);
         setError(null);
         setLoading(false);
