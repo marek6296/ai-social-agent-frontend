@@ -26,13 +26,12 @@ import {
   CheckCircle2,
   AlertCircle,
   Bot,
-  Key,
-  Shield,
-  MessageSquare,
   Sparkles,
-  Clock,
-  FileText,
   Settings as SettingsIcon,
+  MessageSquare,
+  ExternalLink,
+  Copy,
+  Users,
 } from "lucide-react";
 import type { TelegramBot, TelegramBotLanguage, TelegramResponseMode, TelegramAITone } from "@/lib/types/telegram";
 
@@ -46,67 +45,34 @@ export default function TelegramBotSettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showToken, setShowToken] = useState(false);
+  const [botUsername, setBotUsername] = useState<string | null>(null);
 
   const [bot, setBot] = useState<TelegramBot | null>(null);
 
-  // A) Základné informácie
+  // Základné informácie
   const [botName, setBotName] = useState("");
-  const [publicName, setPublicName] = useState("");
   const [description, setDescription] = useState("");
-  const [botAvatarUrl, setBotAvatarUrl] = useState("");
   const [botLanguage, setBotLanguage] = useState<TelegramBotLanguage>("SK");
-  const [fallbackLanguages, setFallbackLanguages] = useState<string[]>([]);
-  const [timezone, setTimezone] = useState("Europe/Oslo");
 
-  // B) Prepojenie
+  // Prepojenie
   const [botToken, setBotToken] = useState("");
-  const [webhookUrl, setWebhookUrl] = useState("");
-  const [webhookEnabled, setWebhookEnabled] = useState(false);
-  const [longPollingEnabled, setLongPollingEnabled] = useState(true);
-  const [allowedUpdates, setAllowedUpdates] = useState<string[]>([]);
-  const [rateLimitPerMinute, setRateLimitPerMinute] = useState(30);
-  const [cooldownSeconds, setCooldownSeconds] = useState(1);
 
-  // C) Prístup a bezpečnosť
-  const [accessMode, setAccessMode] = useState<"all" | "whitelist">("all");
-  const [allowedUsers, setAllowedUsers] = useState<string[]>([]);
-  const [allowedChatTypes, setAllowedChatTypes] = useState<("private" | "group" | "channel")[]>(["private", "group", "channel"]);
-  const [adminUsers, setAdminUsers] = useState<string[]>([]);
-  const [antiSpamEnabled, setAntiSpamEnabled] = useState(false);
-  const [messagesPerUserLimit, setMessagesPerUserLimit] = useState(10);
-  const [blockedKeywords, setBlockedKeywords] = useState<string[]>([]);
-  const [blockedLinks, setBlockedLinks] = useState(false);
-  const [gdprPrivacyText, setGdprPrivacyText] = useState("");
-
-  // D) Správanie bota
+  // Správanie bota
   const [responseMode, setResponseMode] = useState<TelegramResponseMode>("rules");
-  const [responseDelayMs, setResponseDelayMs] = useState(500);
-  const [respondOnlyOnMention, setRespondOnlyOnMention] = useState(false);
   const [fallbackMessage, setFallbackMessage] = useState("Prepáč, nerozumiem tejto správe.");
   const [moduleWelcome, setModuleWelcome] = useState(false);
   const [moduleHelp, setModuleHelp] = useState(false);
   const [moduleAutoReplies, setModuleAutoReplies] = useState(true);
-  const [moduleNotifications, setModuleNotifications] = useState(false);
-  const [moduleForms, setModuleForms] = useState(false);
-  const [moduleBooking, setModuleBooking] = useState(false);
-  const [moduleSupportTickets, setModuleSupportTickets] = useState(false);
-  const [moduleAiAnswers, setModuleAiAnswers] = useState(false);
 
-  // H) AI nastavenia
-  const [aiKnowledgeSourceTypes, setAiKnowledgeSourceTypes] = useState<Set<"faq" | "uploaded" | "custom" | "url">>(new Set());
+  // AI nastavenia
+  const [aiKnowledgeSourceTypes, setAiKnowledgeSourceTypes] = useState<Set<"faq" | "custom">>(new Set());
   const [aiCustomKnowledgeText, setAiCustomKnowledgeText] = useState("");
   const [aiTone, setAiTone] = useState<TelegramAITone>("friendly");
-  const [aiCustomTone, setAiCustomTone] = useState("");
-  const [aiForbiddenTopics, setAiForbiddenTopics] = useState<string[]>([]);
-  const [aiHumanHandoffEnabled, setAiHumanHandoffEnabled] = useState(false);
-  const [aiHumanHandoffContact, setAiHumanHandoffContact] = useState("");
   const [aiMaxResponseTokens, setAiMaxResponseTokens] = useState(300);
 
-  // I) Plánovanie
-  const [workingHoursEnabled, setWorkingHoursEnabled] = useState(false);
-  const [afterHoursMode, setAfterHoursMode] = useState<"auto_reply" | "disable_ai" | "redirect_contact">("auto_reply");
-  const [afterHoursMessage, setAfterHoursMessage] = useState("");
-  const [afterHoursContact, setAfterHoursContact] = useState("");
+  // Šablóny správ
+  const [welcomeMessage, setWelcomeMessage] = useState("");
+  const [helpMessage, setHelpMessage] = useState("");
 
   useEffect(() => {
     loadBot();
@@ -132,62 +98,35 @@ export default function TelegramBotSettingsPage() {
 
       setBot(botData as TelegramBot);
       
-      // Load all settings
       setBotName(botData.bot_name || "");
-      setPublicName(botData.public_name || "");
       setDescription(botData.description || "");
-      setBotAvatarUrl(botData.bot_avatar_url || "");
       setBotLanguage(botData.bot_language || "SK");
-      setFallbackLanguages(botData.fallback_languages || []);
-      setTimezone(botData.timezone || "Europe/Oslo");
-      
       setBotToken(botData.bot_token ? "***" : "");
-      setWebhookUrl(botData.webhook_url || "");
-      setWebhookEnabled(botData.webhook_enabled || false);
-      setLongPollingEnabled(botData.long_polling_enabled !== false);
-      setAllowedUpdates(botData.allowed_updates || []);
-      setRateLimitPerMinute(botData.rate_limit_per_minute || 30);
-      setCooldownSeconds(botData.cooldown_seconds || 1);
-      
-      setAccessMode(botData.access_mode || "all");
-      setAllowedUsers(botData.allowed_users || []);
-      setAllowedChatTypes(botData.allowed_chat_types || ["private", "group", "channel"]);
-      setAdminUsers(botData.admin_users || []);
-      setAntiSpamEnabled(botData.anti_spam_enabled || false);
-      setMessagesPerUserLimit(botData.messages_per_user_limit || 10);
-      setBlockedKeywords(botData.blocked_keywords || []);
-      setBlockedLinks(botData.blocked_links || false);
-      setGdprPrivacyText(botData.gdpr_privacy_text || "");
-      
       setResponseMode(botData.response_mode || "rules");
-      setResponseDelayMs(botData.response_delay_ms || 500);
-      setRespondOnlyOnMention(botData.respond_only_on_mention || false);
       setFallbackMessage(botData.fallback_message || "Prepáč, nerozumiem tejto správe.");
-      
       setModuleWelcome(botData.module_welcome || false);
       setModuleHelp(botData.module_help || false);
       setModuleAutoReplies(botData.module_auto_replies !== false);
-      setModuleNotifications(botData.module_notifications || false);
-      setModuleForms(botData.module_forms || false);
-      setModuleBooking(botData.module_booking || false);
-      setModuleSupportTickets(botData.module_support_tickets || false);
-      setModuleAiAnswers(botData.module_ai_answers || false);
       
       if (botData.ai_knowledge_source_types) {
-        setAiKnowledgeSourceTypes(new Set(botData.ai_knowledge_source_types));
+        setAiKnowledgeSourceTypes(new Set(botData.ai_knowledge_source_types.filter((t: string) => t === "faq" || t === "custom")));
       }
       setAiCustomKnowledgeText(botData.ai_custom_knowledge_text || "");
       setAiTone(botData.ai_tone || "friendly");
-      setAiCustomTone(botData.ai_custom_tone || "");
-      setAiForbiddenTopics(botData.ai_forbidden_topics || []);
-      setAiHumanHandoffEnabled(botData.ai_human_handoff_enabled || false);
-      setAiHumanHandoffContact(botData.ai_human_handoff_contact || "");
       setAiMaxResponseTokens(botData.ai_max_response_tokens || 300);
       
-      setWorkingHoursEnabled(botData.working_hours_enabled || false);
-      setAfterHoursMode(botData.after_hours_mode || "auto_reply");
-      setAfterHoursMessage(botData.after_hours_message || "");
-      setAfterHoursContact(botData.after_hours_contact || "");
+      // Load templates
+      const { data: templates } = await supabase
+        .from("telegram_bot_templates")
+        .select("*")
+        .eq("bot_id", botId);
+      
+      if (templates) {
+        const welcomeTemplate = templates.find((t: any) => t.template_name === "welcome");
+        const helpTemplate = templates.find((t: any) => t.template_name === "help");
+        setWelcomeMessage(welcomeTemplate?.template_text || "");
+        setHelpMessage(helpTemplate?.template_text || "");
+      }
       
     } catch (err) {
       console.error("Unexpected error:", err);
@@ -205,58 +144,22 @@ export default function TelegramBotSettingsPage() {
     try {
       const updateData: any = {
         bot_name: botName.trim(),
-        public_name: publicName.trim() || null,
         description: description.trim() || null,
-        bot_avatar_url: botAvatarUrl.trim() || null,
         bot_language: botLanguage,
-        fallback_languages: fallbackLanguages.length > 0 ? fallbackLanguages : null,
-        timezone: timezone,
-        webhook_url: webhookUrl.trim() || null,
-        webhook_enabled: webhookEnabled,
-        long_polling_enabled: longPollingEnabled,
-        allowed_updates: allowedUpdates.length > 0 ? allowedUpdates : null,
-        rate_limit_per_minute: rateLimitPerMinute,
-        cooldown_seconds: cooldownSeconds,
-        access_mode: accessMode,
-        allowed_users: allowedUsers.length > 0 ? allowedUsers : null,
-        allowed_chat_types: allowedChatTypes,
-        admin_users: adminUsers.length > 0 ? adminUsers : null,
-        anti_spam_enabled: antiSpamEnabled,
-        messages_per_user_limit: messagesPerUserLimit,
-        blocked_keywords: blockedKeywords.length > 0 ? blockedKeywords : null,
-        blocked_links: blockedLinks,
-        gdpr_privacy_text: gdprPrivacyText.trim() || null,
         response_mode: responseMode,
-        response_delay_ms: responseDelayMs,
-        respond_only_on_mention: respondOnlyOnMention,
         fallback_message: fallbackMessage.trim(),
         module_welcome: moduleWelcome,
         module_help: moduleHelp,
         module_auto_replies: moduleAutoReplies,
-        module_notifications: moduleNotifications,
-        module_forms: moduleForms,
-        module_booking: moduleBooking,
-        module_support_tickets: moduleSupportTickets,
-        module_ai_answers: moduleAiAnswers,
         ai_knowledge_source_types: responseMode === "ai" && aiKnowledgeSourceTypes.size > 0 ? Array.from(aiKnowledgeSourceTypes) : null,
         ai_custom_knowledge_text: responseMode === "ai" && aiKnowledgeSourceTypes.has("custom") ? aiCustomKnowledgeText.trim() || null : null,
         ai_tone: responseMode === "ai" ? aiTone : "friendly",
-        ai_custom_tone: responseMode === "ai" && aiTone === "custom" ? aiCustomTone.trim() || null : null,
-        ai_forbidden_topics: responseMode === "ai" && aiForbiddenTopics.length > 0 ? aiForbiddenTopics : null,
-        ai_human_handoff_enabled: responseMode === "ai" ? aiHumanHandoffEnabled : false,
-        ai_human_handoff_contact: responseMode === "ai" && aiHumanHandoffEnabled ? aiHumanHandoffContact.trim() || null : null,
         ai_max_response_tokens: responseMode === "ai" ? aiMaxResponseTokens : 300,
-        working_hours_enabled: workingHoursEnabled,
-        after_hours_mode: afterHoursMode,
-        after_hours_message: afterHoursMessage.trim() || null,
-        after_hours_contact: afterHoursContact.trim() || null,
         updated_at: new Date().toISOString(),
       };
 
       // Handle token encryption if changed
       if (botToken && botToken !== "***") {
-        // TODO: Call API endpoint to encrypt token
-        // For now, we'll just save it (should be encrypted by backend)
         updateData.bot_token = botToken.trim();
       }
 
@@ -272,9 +175,38 @@ export default function TelegramBotSettingsPage() {
         return;
       }
 
+      // Save templates
+      if (welcomeMessage.trim()) {
+        await supabase
+          .from("telegram_bot_templates")
+          .upsert({
+            bot_id: botId,
+            template_name: "welcome",
+            template_text: welcomeMessage.trim(),
+            template_variables: ["{first_name}", "{username}"],
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: "bot_id,template_name"
+          });
+      }
+
+      if (helpMessage.trim()) {
+        await supabase
+          .from("telegram_bot_templates")
+          .upsert({
+            bot_id: botId,
+            template_name: "help",
+            template_text: helpMessage.trim(),
+            template_variables: [],
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: "bot_id,template_name"
+          });
+      }
+
       setSuccess("Nastavenia boli úspešne uložené!");
       setTimeout(() => setSuccess(null), 3000);
-      loadBot(); // Reload to get updated data
+      loadBot();
     } catch (err) {
       console.error("Unexpected error:", err);
       setError("Neočakávaná chyba pri ukladaní");
@@ -301,14 +233,24 @@ export default function TelegramBotSettingsPage() {
       const data = await response.json();
 
       if (data.success && data.connected) {
+        setBotUsername(data.bot_info?.username || null);
         setSuccess(`✅ Pripojenie úspešné! Bot: @${data.bot_info?.username || "N/A"}`);
-        loadBot(); // Reload to update connection_status
+        loadBot();
       } else {
         setError(`❌ Chyba pripojenia: ${data.error || "Neznáma chyba"}`);
       }
     } catch (err: any) {
       console.error("Error testing connection:", err);
       setError("Neočakávaná chyba pri teste pripojenia");
+    }
+  };
+
+  const copyBotLink = () => {
+    if (botUsername) {
+      const link = `https://t.me/${botUsername}`;
+      navigator.clipboard.writeText(link);
+      setSuccess("Odkaz bol skopírovaný!");
+      setTimeout(() => setSuccess(null), 2000);
     }
   };
 
@@ -353,16 +295,11 @@ export default function TelegramBotSettingsPage() {
             Späť na prehľad
           </Button>
           <h1 className="text-3xl font-bold">Nastavenia bota</h1>
-          <p className="text-muted-foreground">Kompletné nastavenia pre Telegram bota</p>
+          <p className="text-muted-foreground">Spravuj nastavenia svojho Telegram bota</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleTestConnection}>
-            Test pripojenia
-          </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Ukladám..." : "Uložiť zmeny"}
-          </Button>
-        </div>
+        <Button onClick={handleSave} disabled={saving}>
+          {saving ? "Ukladám..." : "Uložiť zmeny"}
+        </Button>
       </div>
 
       {/* Error/Success Messages */}
@@ -382,32 +319,27 @@ export default function TelegramBotSettingsPage() {
 
       {/* Settings Tabs */}
       <Tabs defaultValue="basic" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="basic">Základné</TabsTrigger>
           <TabsTrigger value="connection">Prepojenie</TabsTrigger>
-          <TabsTrigger value="security">Bezpečnosť</TabsTrigger>
           <TabsTrigger value="behavior">Správanie</TabsTrigger>
           <TabsTrigger value="messages">Správy</TabsTrigger>
-          <TabsTrigger value="commands">Príkazy</TabsTrigger>
-          <TabsTrigger value="integrations">Integrácie</TabsTrigger>
           <TabsTrigger value="ai">AI</TabsTrigger>
-          <TabsTrigger value="schedule">Plánovanie</TabsTrigger>
-          <TabsTrigger value="logs">Logy</TabsTrigger>
         </TabsList>
 
-        {/* A) Základné informácie */}
+        {/* Základné informácie */}
         <TabsContent value="basic" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Základné informácie</CardTitle>
               <CardDescription>
-                Meno, popis, jazyk a základné nastavenia bota
+                Meno a popis bota
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="botName">
-                  Meno bota (interné) <span className="text-red-500">*</span>
+                  Meno bota <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="botName"
@@ -417,39 +349,18 @@ export default function TelegramBotSettingsPage() {
                   required
                 />
                 <p className="text-xs text-muted-foreground">
-                  Toto meno sa zobrazí len v dashboarde
+                  Toto meno sa zobrazí len v dashboarde, nie používateľom
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="publicName">Verejné meno</Label>
-                <Input
-                  id="publicName"
-                  value={publicName}
-                  onChange={(e) => setPublicName(e.target.value)}
-                  placeholder="Názov, ktorý uvidia používatelia"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Popis</Label>
+                <Label htmlFor="description">Popis bota</Label>
                 <Textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Krátky popis bota..."
+                  placeholder="Krátky popis, na čo sa bot používa..."
                   rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="botAvatarUrl">URL avatara</Label>
-                <Input
-                  id="botAvatarUrl"
-                  value={botAvatarUrl}
-                  onChange={(e) => setBotAvatarUrl(e.target.value)}
-                  placeholder="https://..."
-                  type="url"
                 />
               </div>
 
@@ -466,33 +377,21 @@ export default function TelegramBotSettingsPage() {
                     <SelectItem value="CZ">Čeština</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="timezone">Časové pásmo</Label>
-                <Select value={timezone} onValueChange={(value) => setTimezone(value)}>
-                  <SelectTrigger id="timezone">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Europe/Oslo">Europe/Oslo</SelectItem>
-                    <SelectItem value="Europe/Bratislava">Europe/Bratislava</SelectItem>
-                    <SelectItem value="Europe/Prague">Europe/Prague</SelectItem>
-                    <SelectItem value="UTC">UTC</SelectItem>
-                  </SelectContent>
-                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Jazyk, v ktorom bude bot odpovedať
+                </p>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* B) Prepojenie */}
+        {/* Prepojenie */}
         <TabsContent value="connection" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Prepojenie s Telegram</CardTitle>
               <CardDescription>
-                Bot Token, Webhook a Long Polling nastavenia
+                Pridaj token a otestuj pripojenie
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -516,7 +415,7 @@ export default function TelegramBotSettingsPage() {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Token môžeš získať od @BotFather na Telegrame
+                  Token získáš od @BotFather na Telegrame. Pošli mu príkaz /newbot a postupuj podľa inštrukcií.
                 </p>
                 <Button
                   type="button"
@@ -529,182 +428,87 @@ export default function TelegramBotSettingsPage() {
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Webhook</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Zapnúť webhook režim
-                  </p>
-                </div>
-                <Switch
-                  checked={webhookEnabled}
-                  onCheckedChange={setWebhookEnabled}
-                />
-              </div>
-
-              {webhookEnabled && (
-                <div className="space-y-2">
-                  <Label htmlFor="webhookUrl">Webhook URL</Label>
-                  <Input
-                    id="webhookUrl"
-                    value={webhookUrl}
-                    onChange={(e) => setWebhookUrl(e.target.value)}
-                    placeholder="https://..."
-                  />
-                </div>
-              )}
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Long Polling</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Zapnúť long polling režim (default)
-                  </p>
-                </div>
-                <Switch
-                  checked={longPollingEnabled}
-                  onCheckedChange={setLongPollingEnabled}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Rate Limit (správy za minútu)</Label>
-                <Input
-                  type="number"
-                  value={rateLimitPerMinute}
-                  onChange={(e) => setRateLimitPerMinute(parseInt(e.target.value) || 30)}
-                  min={1}
-                  max={100}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Cooldown (sekundy)</Label>
-                <Input
-                  type="number"
-                  value={cooldownSeconds}
-                  onChange={(e) => setCooldownSeconds(parseInt(e.target.value) || 1)}
-                  min={0}
-                  max={60}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* C) Bezpečnosť */}
-        <TabsContent value="security" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Prístup a bezpečnosť</CardTitle>
-              <CardDescription>
-                Whitelist používateľov, admin práva, anti-spam
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label>Režim prístupu</Label>
-                <Select value={accessMode} onValueChange={(value: any) => setAccessMode(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Všetci</SelectItem>
-                    <SelectItem value="whitelist">Whitelist</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Povolené typy chatov</Label>
-                <div className="space-y-2">
-                  {(["private", "group", "channel"] as const).map((type) => (
-                    <div key={type} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={`chat-${type}`}
-                        checked={allowedChatTypes.includes(type)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setAllowedChatTypes([...allowedChatTypes, type]);
-                          } else {
-                            setAllowedChatTypes(allowedChatTypes.filter(t => t !== type));
-                          }
-                        }}
-                        className="rounded"
-                      />
-                      <Label htmlFor={`chat-${type}`} className="font-normal capitalize">
-                        {type}
-                      </Label>
+              {botUsername && (
+                <Card className="bg-blue-500/10 border-blue-500/20">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Bot className="h-5 w-5 text-blue-500" />
+                      Bot je pripojený!
+                    </CardTitle>
+                    <CardDescription>
+                      Tvoj bot: @{botUsername}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label>Odkaz na bota</Label>
+                      <div className="flex gap-2 mt-2">
+                        <Input
+                          value={`https://t.me/${botUsername}`}
+                          readOnly
+                          className="font-mono text-sm"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={copyBotLink}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Anti-spam</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Obmedziť počet správ na používateľa
-                  </p>
-                </div>
-                <Switch
-                  checked={antiSpamEnabled}
-                  onCheckedChange={setAntiSpamEnabled}
-                />
-              </div>
-
-              {antiSpamEnabled && (
-                <div className="space-y-2">
-                  <Label>Max správ na používateľa (za minútu)</Label>
-                  <Input
-                    type="number"
-                    value={messagesPerUserLimit}
-                    onChange={(e) => setMessagesPerUserLimit(parseInt(e.target.value) || 10)}
-                    min={1}
-                    max={100}
-                  />
-                </div>
+                    <div className="p-4 bg-background rounded-lg border">
+                      <h4 className="font-semibold mb-3 flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Ako pridať bota do skupiny alebo chatu?
+                      </h4>
+                      <ol className="space-y-2 text-sm list-decimal list-inside">
+                        <li>
+                          Klikni na odkaz vyššie alebo nájdi bota na Telegrame: <strong>@{botUsername}</strong>
+                        </li>
+                        <li>
+                          Klikni na <strong>"Začať"</strong> (Start) aby si spustil súkromný chat s botom
+                        </li>
+                        <li>
+                          <strong>Pre pridanie do skupiny:</strong>
+                          <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
+                            <li>Choď do skupiny, kam chceš pridať bota</li>
+                            <li>Klikni na názov skupiny (hore) → <strong>Pridať členov</strong></li>
+                            <li>Nájdi a vyber bota <strong>@{botUsername}</strong></li>
+                            <li>Klikni na <strong>Pridať</strong></li>
+                            <li><strong>Dôležité:</strong> V nastaveniach skupiny daj botovi práva na čítanie správ (ak chceš, aby reagoval na správy)</li>
+                          </ul>
+                        </li>
+                        <li>
+                          <strong>Pre súkromný chat:</strong> Jednoducho pošli správu botovi a on ti odpovie
+                        </li>
+                      </ol>
+                      <div className="mt-4 p-3 bg-blue-500/10 rounded-lg">
+                        <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                          💡 Tip: V skupine môžeš bota spomenúť pomocou @{botUsername}, aby odpovedal na tvoju správu
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Blokovať linky</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Automaticky blokovať linky v správach
-                  </p>
-                </div>
-                <Switch
-                  checked={blockedLinks}
-                  onCheckedChange={setBlockedLinks}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="gdprPrivacyText">GDPR / Privacy text</Label>
-                <Textarea
-                  id="gdprPrivacyText"
-                  value={gdprPrivacyText}
-                  onChange={(e) => setGdprPrivacyText(e.target.value)}
-                  placeholder="Čo sa loguje, retention policy..."
-                  rows={4}
-                />
-              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* D) Správanie bota */}
+        {/* Správanie bota */}
         <TabsContent value="behavior" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Správanie bota</CardTitle>
               <CardDescription>
-                Režim odpovedania a moduly
+                Ako sa má bot správať a aké funkcie má mať
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <Label>Režim odpovedania</Label>
                 <div className="grid gap-4 md:grid-cols-2">
                   <button
@@ -724,7 +528,7 @@ export default function TelegramBotSettingsPage() {
                     </div>
                     <h3 className="font-semibold mb-1">Len bot</h3>
                     <p className="text-sm text-muted-foreground">
-                      Bot odpovedá iba podľa pravidiel a šablón
+                      Bot odpovedá iba podľa pravidiel a šablón, ktoré nastavíš. Jednoduchý a rýchly.
                     </p>
                   </button>
 
@@ -745,129 +549,154 @@ export default function TelegramBotSettingsPage() {
                     </div>
                     <h3 className="font-semibold mb-1">Bot + AI</h3>
                     <p className="text-sm text-muted-foreground">
-                      Bot používa AI pre inteligentné odpovede
+                      Bot používa AI pre inteligentné odpovede. Vhodné pre podporu zákazníkov alebo FAQ.
                     </p>
                   </button>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>Response delay (ms)</Label>
-                <Input
-                  type="number"
-                  value={responseDelayMs}
-                  onChange={(e) => setResponseDelayMs(parseInt(e.target.value) || 500)}
-                  min={0}
-                  max={5000}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Odpovedať iba na mention</Label>
-                  <p className="text-xs text-muted-foreground">
-                    V skupinách odpovedať len keď je bot spomenutý
-                  </p>
-                </div>
-                <Switch
-                  checked={respondOnlyOnMention}
-                  onCheckedChange={setRespondOnlyOnMention}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="fallbackMessage">Fallback správa</Label>
+                <Label htmlFor="fallbackMessage">Správa, keď bot nerozumie</Label>
                 <Textarea
                   id="fallbackMessage"
                   value={fallbackMessage}
                   onChange={(e) => setFallbackMessage(e.target.value)}
-                  placeholder="Správa keď bot nerozumie..."
+                  placeholder="Prepáč, nerozumiem tejto správe. Skús napísať inak alebo použij /help"
                   rows={2}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Táto správa sa pošle, keď bot nevie odpovedať na otázku
+                </p>
               </div>
 
               <div className="space-y-4 pt-4 border-t">
-                <h3 className="font-semibold">Moduly</h3>
+                <h3 className="font-semibold">Zapnuté funkcie</h3>
                 <div className="space-y-3">
-                  {[
-                    { key: "welcome", label: "Welcome & Onboarding", state: moduleWelcome, setState: setModuleWelcome },
-                    { key: "help", label: "Help/FAQ", state: moduleHelp, setState: setModuleHelp },
-                    { key: "auto_replies", label: "Auto-replies", state: moduleAutoReplies, setState: setModuleAutoReplies },
-                    { key: "notifications", label: "Notifications", state: moduleNotifications, setState: setModuleNotifications },
-                    { key: "forms", label: "Forms/Surveys", state: moduleForms, setState: setModuleForms },
-                    { key: "booking", label: "Booking/Reservations", state: moduleBooking, setState: setModuleBooking },
-                    { key: "support_tickets", label: "Support Ticketing", state: moduleSupportTickets, setState: setModuleSupportTickets },
-                    { key: "ai_answers", label: "AI Answers", state: moduleAiAnswers, setState: setModuleAiAnswers },
-                  ].map(({ key, label, state, setState }) => (
-                    <div key={key} className="flex items-center justify-between">
-                      <Label htmlFor={`module-${key}`}>{label}</Label>
-                      <Switch
-                        id={`module-${key}`}
-                        checked={state}
-                        onCheckedChange={setState}
-                      />
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="moduleWelcome">Úvodná správa</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Pošle úvodnú správu novým používateľom pri /start
+                      </p>
                     </div>
-                  ))}
+                    <Switch
+                      id="moduleWelcome"
+                      checked={moduleWelcome}
+                      onCheckedChange={setModuleWelcome}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="moduleHelp">Pomocný príkaz /help</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Bot odpovie na príkaz /help s informáciami
+                      </p>
+                    </div>
+                    <Switch
+                      id="moduleHelp"
+                      checked={moduleHelp}
+                      onCheckedChange={setModuleHelp}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="moduleAutoReplies">Automatické odpovede</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Bot automaticky odpovedá na správy podľa nastavení
+                      </p>
+                    </div>
+                    <Switch
+                      id="moduleAutoReplies"
+                      checked={moduleAutoReplies}
+                      onCheckedChange={setModuleAutoReplies}
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* H) AI nastavenia */}
+        {/* AI nastavenia */}
         <TabsContent value="ai" className="space-y-4">
           {responseMode === "ai" ? (
             <Card>
               <CardHeader>
                 <CardTitle>AI nastavenia</CardTitle>
                 <CardDescription>
-                  Konfigurácia AI odpovedí pre bota
+                  Konfigurácia AI odpovedí (zobrazuje sa len keď je zapnutý režim "Bot + AI")
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label>Zdroj vedomostí</Label>
+                  <Label>Zdroj vedomostí pre AI</Label>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Vyber, odkiaľ má AI čerpať informácie
+                  </p>
                   <div className="space-y-2">
-                    {(["faq", "uploaded", "custom", "url"] as const).map((type) => (
-                      <div key={type} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id={`knowledge-${type}`}
-                          checked={aiKnowledgeSourceTypes.has(type)}
-                          onChange={(e) => {
-                            const newSet = new Set(aiKnowledgeSourceTypes);
-                            if (e.target.checked) {
-                              newSet.add(type);
-                            } else {
-                              newSet.delete(type);
-                            }
-                            setAiKnowledgeSourceTypes(newSet);
-                          }}
-                          className="rounded"
-                        />
-                        <Label htmlFor={`knowledge-${type}`} className="font-normal capitalize">
-                          {type === "faq" ? "FAQ" : type === "uploaded" ? "Nahrané súbory" : type === "custom" ? "Vlastný text" : "URL"}
-                        </Label>
-                      </div>
-                    ))}
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="knowledge-faq"
+                        checked={aiKnowledgeSourceTypes.has("faq")}
+                        onChange={(e) => {
+                          const newSet = new Set(aiKnowledgeSourceTypes);
+                          if (e.target.checked) {
+                            newSet.add("faq");
+                          } else {
+                            newSet.delete("faq");
+                          }
+                          setAiKnowledgeSourceTypes(newSet);
+                        }}
+                        className="rounded"
+                      />
+                      <Label htmlFor="knowledge-faq" className="font-normal">
+                        FAQ (často kladené otázky) - zatiaľ nie je implementované
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="knowledge-custom"
+                        checked={aiKnowledgeSourceTypes.has("custom")}
+                        onChange={(e) => {
+                          const newSet = new Set(aiKnowledgeSourceTypes);
+                          if (e.target.checked) {
+                            newSet.add("custom");
+                          } else {
+                            newSet.delete("custom");
+                          }
+                          setAiKnowledgeSourceTypes(newSet);
+                        }}
+                        className="rounded"
+                      />
+                      <Label htmlFor="knowledge-custom" className="font-normal">
+                        Vlastný text - zadáš vlastné informácie pre bota
+                      </Label>
+                    </div>
                   </div>
                 </div>
 
                 {aiKnowledgeSourceTypes.has("custom") && (
                   <div className="space-y-2">
-                    <Label htmlFor="aiCustomKnowledgeText">Vlastný text vedomostí</Label>
+                    <Label htmlFor="aiCustomKnowledgeText">Vlastný text s informáciami</Label>
                     <Textarea
                       id="aiCustomKnowledgeText"
                       value={aiCustomKnowledgeText}
                       onChange={(e) => setAiCustomKnowledgeText(e.target.value)}
-                      placeholder="Vlastný text s informáciami pre bota..."
-                      rows={6}
+                      placeholder="Napíš tu informácie o tvojej spoločnosti, produktoch, službách alebo čomkoľvek, čo má bot vedieť..."
+                      rows={8}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Príklad: "Naša spoločnosť predáva IT služby. Oteváracie hodiny: Po-Pi 9-17. Kontakt: info@spolocnost.sk"
+                    </p>
                   </div>
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="aiTone">Tón</Label>
+                  <Label htmlFor="aiTone">Tón odpovedí</Label>
                   <Select value={aiTone} onValueChange={(value: any) => setAiTone(value)}>
                     <SelectTrigger id="aiTone">
                       <SelectValue />
@@ -876,23 +705,12 @@ export default function TelegramBotSettingsPage() {
                       <SelectItem value="friendly">Priateľský</SelectItem>
                       <SelectItem value="professional">Profesionálny</SelectItem>
                       <SelectItem value="funny">Zábavný</SelectItem>
-                      <SelectItem value="custom">Vlastný</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Ako má AI formulovať odpovede
+                  </p>
                 </div>
-
-                {aiTone === "custom" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="aiCustomTone">Vlastný tón</Label>
-                    <Textarea
-                      id="aiCustomTone"
-                      value={aiCustomTone}
-                      onChange={(e) => setAiCustomTone(e.target.value)}
-                      placeholder="Popíš vlastný tón..."
-                      rows={3}
-                    />
-                  </div>
-                )}
 
                 <div className="space-y-2">
                   <Label>Maximálna dĺžka odpovede (tokeny)</Label>
@@ -903,186 +721,27 @@ export default function TelegramBotSettingsPage() {
                     min={50}
                     max={2000}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Maximálny počet tokenov v AI odpovedi (300 = cca 200 slov)
+                  </p>
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Human handoff</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Presmerovať na človeka keď bot nevie odpovedať
-                    </p>
-                  </div>
-                  <Switch
-                    checked={aiHumanHandoffEnabled}
-                    onCheckedChange={setAiHumanHandoffEnabled}
-                  />
-                </div>
-
-                {aiHumanHandoffEnabled && (
-                  <div className="space-y-2">
-                    <Label htmlFor="aiHumanHandoffContact">Kontakt pre handoff</Label>
-                    <Input
-                      id="aiHumanHandoffContact"
-                      value={aiHumanHandoffContact}
-                      onChange={(e) => setAiHumanHandoffContact(e.target.value)}
-                      placeholder="Telegram username alebo odkaz"
-                    />
-                  </div>
-                )}
               </CardContent>
             </Card>
           ) : (
             <Card>
               <CardContent className="pt-6">
-                <p className="text-muted-foreground text-center">
-                  AI nastavenia sú dostupné len keď je zapnutý režim "Bot + AI"
-                </p>
+                <div className="text-center py-8">
+                  <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    AI nastavenia sú dostupné len keď je zapnutý režim "Bot + AI"
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Choď do sekcie "Správanie" a prepni na "Bot + AI"
+                  </p>
+                </div>
               </CardContent>
             </Card>
           )}
-        </TabsContent>
-
-        {/* I) Plánovanie */}
-        <TabsContent value="schedule" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Plánovanie</CardTitle>
-              <CardDescription>
-                Pracovné hodiny a správy po pracovných hodinách
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Pracovné hodiny</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Zapnúť pracovné hodiny
-                  </p>
-                </div>
-                <Switch
-                  checked={workingHoursEnabled}
-                  onCheckedChange={setWorkingHoursEnabled}
-                />
-              </div>
-
-              {workingHoursEnabled && (
-                <div className="p-4 bg-muted rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    Konfigurácia pracovných hodín bude dostupná neskôr
-                  </p>
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label>Režim mimo pracovných hodín</Label>
-                <Select value={afterHoursMode} onValueChange={(value: any) => setAfterHoursMode(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="auto_reply">Auto reply</SelectItem>
-                    <SelectItem value="disable_ai">Vypnúť AI</SelectItem>
-                    <SelectItem value="redirect_contact">Presmerovať na kontakt</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {afterHoursMode === "auto_reply" && (
-                <div className="space-y-2">
-                  <Label htmlFor="afterHoursMessage">Správa mimo pracovných hodín</Label>
-                  <Textarea
-                    id="afterHoursMessage"
-                    value={afterHoursMessage}
-                    onChange={(e) => setAfterHoursMessage(e.target.value)}
-                    placeholder="Správa, ktorá sa pošle mimo pracovných hodín..."
-                    rows={3}
-                  />
-                </div>
-              )}
-
-              {afterHoursMode === "redirect_contact" && (
-                <div className="space-y-2">
-                  <Label htmlFor="afterHoursContact">Kontakt</Label>
-                  <Input
-                    id="afterHoursContact"
-                    value={afterHoursContact}
-                    onChange={(e) => setAfterHoursContact(e.target.value)}
-                    placeholder="Telegram username alebo odkaz"
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* E) Správy a šablóny - Placeholder */}
-        <TabsContent value="messages">
-          <Card>
-            <CardHeader>
-              <CardTitle>Správy a šablóny</CardTitle>
-              <CardDescription>
-                Editor šablón správ (welcome, help, atď.)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Editor šablón správ bude implementovaný neskôr
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* F) Príkazy - Placeholder */}
-        <TabsContent value="commands">
-          <Card>
-            <CardHeader>
-              <CardTitle>Príkazy & Flow</CardTitle>
-              <CardDescription>
-                Builder pre príkazy a flow akcie
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Command & Flow builder bude implementovaný neskôr
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* G) Integrácie - Placeholder */}
-        <TabsContent value="integrations">
-          <Card>
-            <CardHeader>
-              <CardTitle>Integrácie</CardTitle>
-              <CardDescription>
-                Webhooks a externé integrácie
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Integrácie budú implementované neskôr
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* J) Logy - Redirect to logs page */}
-        <TabsContent value="logs">
-          <Card>
-            <CardHeader>
-              <CardTitle>Logy & Monitoring</CardTitle>
-              <CardDescription>
-                Prehľad udalostí a chýb bota
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild>
-                <a href={`/dashboard/telegram-bots/${botId}/logs`}>
-                  Otvoriť logy
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
     </div>
