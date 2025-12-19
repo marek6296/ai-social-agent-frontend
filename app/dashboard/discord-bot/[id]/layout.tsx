@@ -20,7 +20,6 @@ import {
   BarChart3,
   Settings as SettingsIcon,
   Menu,
-  X,
 } from "lucide-react";
 
 const modules = [
