@@ -52,6 +52,7 @@ export default function TelegramBotSettingsPage() {
 
   // Základné informácie
   const [botName, setBotName] = useState("");
+  const [publicName, setPublicName] = useState("");
   const [description, setDescription] = useState("");
   const [botLanguage, setBotLanguage] = useState<TelegramBotLanguage>("SK");
 
@@ -100,6 +101,7 @@ export default function TelegramBotSettingsPage() {
       setBot(botData as TelegramBot);
       
       setBotName(botData.bot_name || "");
+      setPublicName(botData.public_name || "");
       setDescription(botData.description || "");
       setBotLanguage(botData.bot_language || "SK");
       setBotToken(botData.bot_token ? "***" : "");
@@ -148,6 +150,7 @@ export default function TelegramBotSettingsPage() {
     try {
       const updateData: any = {
         bot_name: botName.trim(),
+        public_name: publicName.trim() || null,
         description: description.trim() || null,
         bot_language: botLanguage,
         response_mode: responseMode,
