@@ -46,6 +46,7 @@ export default function TelegramBotSettingsPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [showToken, setShowToken] = useState(false);
   const [botUsername, setBotUsername] = useState<string | null>(null);
+  const [botStatus, setBotStatus] = useState<"active" | "inactive" | "error" | "draft">("draft");
 
   const [bot, setBot] = useState<TelegramBot | null>(null);
 
@@ -107,6 +108,9 @@ export default function TelegramBotSettingsPage() {
       setModuleWelcome(botData.module_welcome || false);
       setModuleHelp(botData.module_help || false);
       setModuleAutoReplies(botData.module_auto_replies !== false);
+      
+      // Set bot status
+      setBotStatus(botData.status || "draft");
       
       if (botData.ai_knowledge_source_types) {
         setAiKnowledgeSourceTypes(new Set(botData.ai_knowledge_source_types.filter((t: string) => t === "faq" || t === "custom")));
