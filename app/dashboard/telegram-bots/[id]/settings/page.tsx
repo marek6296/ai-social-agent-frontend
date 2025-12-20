@@ -477,6 +477,21 @@ npm run dev`}
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="publicName">
+                  Verejné meno
+                </Label>
+                <Input
+                  id="publicName"
+                  value={publicName}
+                  onChange={(e) => setPublicName(e.target.value)}
+                  placeholder="Napríklad: Môj Support Bot"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Meno, ktoré sa zobrazí používateľom v Telegrame (voliteľné)
+                </p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="description">Popis bota</Label>
                 <Textarea
                   id="description"
