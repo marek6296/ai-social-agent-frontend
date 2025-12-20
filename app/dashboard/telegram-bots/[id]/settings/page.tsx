@@ -317,6 +317,126 @@ export default function TelegramBotSettingsPage() {
         </div>
       )}
 
+      {/* Bot Status / Activate */}
+      <Card>
+        <CardContent className="pt-6">
+          {botStatus === 'active' ? (
+            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-sm text-green-700 dark:text-green-400 mb-2">
+                    ✅ <strong>Bot je aktívny</strong>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Telegram Bot Service beží a bot je pripojený k Telegram API. Bot reaguje na správy podľa nastavení nižšie.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    const { data: userData } = await supabase.auth.getUser();
+                    if (!userData.user) return;
+                    
+                    setSaving(true);
+                    const { error } = await supabase
+                      .from("telegram_bots")
+                      .update({ status: 'inactive' })
+                      .eq("id", botId)
+                      .eq("user_id", userData.user.id);
+                    
+                    if (!error) {
+                      setBotStatus('inactive');
+                      setBot((prev) => prev ? { ...prev, status: 'inactive' as const } : null);
+                      setSuccess("Bot bol deaktivovaný!");
+                    } else {
+                      setError("Chyba pri deaktivácii: " + error.message);
+                    }
+                    setSaving(false);
+                  }}
+                  disabled={saving}
+                  className="ml-4"
+                >
+                  Deaktivovať
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400 mb-2">
+                    ⚠️ <strong>Bot je momentálne neaktívny</strong>
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Telegram Bot Service musí byť spustený a bot musí mať status "active" v databáze.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={async () => {
+                    const { data: userData } = await supabase.auth.getUser();
+                    if (!userData.user) {
+                      setError("Nie si prihlásený");
+                      return;
+                    }
+                    
+                    setSaving(true);
+                    const { error } = await supabase
+                      .from("telegram_bots")
+                      .update({ 
+                        status: 'active',
+                        long_polling_enabled: true,
+                        updated_at: new Date().toISOString()
+                      })
+                      .eq("id", botId)
+                      .eq("user_id", userData.user.id);
+                    
+                    if (error) {
+                      setError("Chyba pri aktivácii bota: " + error.message);
+                      setSaving(false);
+                    } else {
+                      setSuccess("Bot bol aktivovaný! Service sa automaticky pripojí za pár sekúnd.");
+                      setBotStatus('active');
+                      setBot((prev) => prev ? { ...prev, status: 'active' as const, long_polling_enabled: true } : null);
+                    }
+                    setSaving(false);
+                  }}
+                  disabled={saving}
+                  className="ml-4"
+                >
+                  {saving ? "Aktivujem..." : "Aktivovať bota"}
+                </Button>
+              </div>
+              <div className="text-xs text-muted-foreground space-y-2">
+                <div>
+                  <strong>📝 Jednoduchý postup (STAČÍ KLIKNÚŤ):</strong>
+                  <ol className="mt-1 ml-4 list-decimal space-y-1">
+                    <li>Klikni na modré tlačidlo <strong>"Aktivovať bota"</strong> vyššie 👆</li>
+                    <li>Status sa zmení na "active" v databáze</li>
+                    <li>Telegram Bot Service (ktorý už beží) automaticky deteguje zmenu</li>
+                    <li>Bot sa pripojí k Telegram API (môže to trvať 30 sekúnd, service kontroluje každých 30 sekúnd)</li>
+                  </ol>
+                  <p className="mt-2 text-xs text-muted-foreground italic">
+                    💡 Tip: Ak chceš rýchlejšie pripojenie, reštartuj service v termináli (Ctrl+C a potom znovu npm run dev)
+                  </p>
+                </div>
+                <div className="mt-2 pt-2 border-t">
+                  <strong>🔧 Ak service nebeží:</strong>
+                  <pre className="mt-1 p-2 bg-muted rounded text-xs overflow-x-auto">
+{`cd telegram-bot-service
+npm run dev`}
+                  </pre>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Settings Tabs */}
       <Tabs defaultValue="basic" className="space-y-4">
         <TabsList className="grid w-full grid-cols-5">
