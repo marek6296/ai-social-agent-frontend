@@ -136,6 +136,10 @@ export async function initializeBot(botData: TelegramBot): Promise<boolean> {
     try {
       if (botData.long_polling_enabled) {
         console.log(`🚀 Starting long polling for bot ${botData.bot_name} (${botData.id})...`);
+        console.log(`   Response mode: ${botData.response_mode}`);
+        console.log(`   Auto replies: ${botData.module_auto_replies}`);
+        console.log(`   Allowed chat types: ${botData.allowed_chat_types.join(', ')}`);
+        console.log(`   Respond only on mention: ${botData.respond_only_on_mention}`);
         bot.launch();
         console.log(`✅ Bot ${botData.bot_name} (${botData.id}) is online!`);
         

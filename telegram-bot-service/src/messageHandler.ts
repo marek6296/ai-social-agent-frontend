@@ -50,6 +50,7 @@ export async function processMessage(
     const userIdStr = userId;
     const usernameStr = username ? `@${username}` : '';
     if (!bot.allowed_users.includes(userIdStr) && !bot.allowed_users.includes(usernameStr)) {
+      console.log(`🚫 User ${userId} (${usernameStr}) is not in whitelist, ignoring message`);
       return;
     }
   }
@@ -59,7 +60,9 @@ export async function processMessage(
                    ctx.chat!.type === 'group' || ctx.chat!.type === 'supergroup' ? 'group' : 
                    'channel';
   
+  console.log(`🔍 Chat type check: ${chatType}, allowed types: ${bot.allowed_chat_types.join(', ')}`);
   if (!bot.allowed_chat_types.includes(chatType)) {
+    console.log(`🚫 Chat type ${chatType} not allowed, ignoring message`);
     return;
   }
 
@@ -71,7 +74,9 @@ export async function processMessage(
       (e.type === 'text_mention' && e.user?.id === ctx.botInfo?.id)
     ) || false;
     
+    console.log(`🔍 Respond only on mention check: ${bot.respond_only_on_mention}, isMentioned: ${isMentioned}`);
     if (!isMentioned) {
+      console.log(`🚫 Bot should respond only on mention but message doesn't mention bot, ignoring`);
       return;
     }
   }
@@ -106,10 +111,18 @@ export async function processMessage(
   console.log(`💬 Processing message from user ${userId} in chat ${chatId}: ${messageText.substring(0, 50)}...`);
 
   // Handle response based on mode
+  console.log(`🤖 Response mode: ${bot.response_mode}, module_auto_replies: ${bot.module_auto_replies}`);
   if (bot.response_mode === 'rules') {
     // Rules mode: only respond to commands or specific triggers
     // For now, just log the message
-    console.log(`📝 Rules mode: message logged but not responding`);
+    console.log(`📝 Rules mode: message logged but not responding (auto-replies disabled or no matching rule)`);
+    // Send fallback message if configured
+    if (bot.fallback_message && bot.module_auto_replies) {
+      if (bot.response_delay_ms > 0) {
+        await new Promise(resolve => setTimeout(resolve, bot.response_delay_ms));
+      }
+      await ctx.reply(bot.fallback_message);
+    }
   } else if (bot.response_mode === 'ai') {
     // AI mode: generate AI response
     try {
