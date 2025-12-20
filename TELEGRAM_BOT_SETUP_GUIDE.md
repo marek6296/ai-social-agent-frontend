@@ -21,6 +21,15 @@
    - `/setuserpic` - Avatar bota
    - `/setcommands` - Nastavenie príkazov (napr. `/start`, `/help`)
 
+6. **DÔLEŽITÉ: Povoliť prístup k správam:**
+   - Napíš `/mybots` v @BotFather
+   - Vyber svojho bota
+   - Klikni na "Bot Settings"
+   - Klikni na "Group Privacy"
+   - **Vypni "Group Privacy"** (alebo zapni "Turn off" ak je zapnuté)
+   - Toto umožní botovi vidieť a spracovávať všetky správy v skupinách
+   - Alternatívne, ak chceš aby bot videl správy iba keď je spomenutý, nechaj "Group Privacy" zapnuté
+
 ### 2. Pridanie tokenu do dashboardu
 
 1. Choď do **Dashboard → Telegram Bots → Vytvoriť nového bota**
