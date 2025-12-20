@@ -7,7 +7,8 @@ export async function generateAIResponse(
   messageText: string,
   bot: TelegramBot,
   userId: string,
-  chatId: string
+  chatId: string,
+  conversationHistory: Array<{ role: string; content: string }> = []
 ): Promise<string | null> {
   // Prevent duplicate API calls
   const messageKey = `${chatId}-${userId}-${messageText.substring(0, 50)}`;
@@ -38,9 +39,10 @@ export async function generateAIResponse(
   // Build system prompt
   const systemPrompt = buildSystemPrompt(bot);
 
-  // Build messages for API
+  // Build messages for API with conversation history
   const messages = [
     { role: 'system', content: systemPrompt },
+    ...conversationHistory,
     { role: 'user', content: messageText },
   ];
 
@@ -117,7 +119,10 @@ function buildSystemPrompt(bot: TelegramBot): string {
 - Odpovedaj vždy v jazyku ${bot.bot_language}.
 - Buď stručný a užitočný.
 - Ak niečo nevieš, priznaj to a navrhni kontakt alebo ďalšie kroky.
-- NIKDY sa nepredstavuj ako ChatGPT alebo OpenAI model.`;
+- NIKDY sa nepredstavuj ako ChatGPT alebo OpenAI model.
+- NIKDY sa nepozdravuj a nepredstavuj sa v každej odpovedi. Poďravuj sa len na začiatku konverzácie (prvá správa používateľa).
+- Pamätaj si kontext predchádzajúcich správ v konverzácii a odpovedaj v kontexte tejto konverzácie.
+- Ak používateľ pokračuje v predchádzajúcej téme, reaguj na to ako pokračovanie konverzácie, nie ako na novú otázku.`;
 
   return prompt.trim();
 }

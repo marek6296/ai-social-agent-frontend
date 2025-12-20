@@ -10,6 +10,10 @@ const MESSAGE_DEBOUNCE_MS = 2000; // 2 seconds
 // Track last response time per chat for cooldown
 const lastResponseTime = new Map<string, number>(); // chatId -> timestamp
 
+// Conversation history per chat (chatId -> array of messages)
+const conversationHistory = new Map<string, Array<{ role: string; content: string }>>();
+const MAX_HISTORY = 10; // Keep last 10 messages (5 user + 5 assistant)
+
 export async function processMessage(
   ctx: Context,
   bot: TelegramBot,
@@ -124,9 +128,20 @@ export async function processMessage(
       await ctx.reply(bot.fallback_message);
     }
   } else if (bot.response_mode === 'ai') {
-    // AI mode: generate AI response
+    // AI mode: generate AI response with conversation history
     try {
-      const aiResponse = await generateAIResponse(messageText, bot, userId, chatId);
+      // Get conversation history for this chat
+      const historyKey = chatId;
+      const history = conversationHistory.get(historyKey) || [];
+      
+      // Add current user message to history
+      const updatedHistory = [...history, { role: 'user', content: messageText }];
+      
+      // Keep only last MAX_HISTORY messages
+      const trimmedHistory = updatedHistory.slice(-MAX_HISTORY);
+      
+      // Generate AI response with history
+      const aiResponse = await generateAIResponse(messageText, bot, userId, chatId, trimmedHistory);
       
       if (aiResponse) {
         // Add response delay if configured
@@ -136,6 +151,10 @@ export async function processMessage(
         
         await ctx.reply(aiResponse);
         lastResponseTime.set(chatId, Date.now());
+        
+        // Add assistant response to history
+        const finalHistory = [...trimmedHistory, { role: 'assistant', content: aiResponse }];
+        conversationHistory.set(historyKey, finalHistory.slice(-MAX_HISTORY));
       }
     } catch (error) {
       console.error(`Error generating AI response:`, error);
